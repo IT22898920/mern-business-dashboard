@@ -17,6 +17,16 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
   },
+  phone: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return !v || /^[\+]?[1-9][\d]{0,15}$/.test(v);
+      },
+      message: 'Please provide a valid phone number'
+    }
+  },
   password: {
     type: String,
     required: [true, 'Password is required'],
@@ -80,6 +90,7 @@ userSchema.virtual('profile').get(function() {
     id: this._id,
     name: this.name,
     email: this.email,
+    phone: this.phone,
     avatar: this.avatar,
     role: this.role,
     isEmailVerified: this.isEmailVerified,

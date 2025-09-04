@@ -23,7 +23,15 @@
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(//mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Bash(fuser:*)"
     ],
     "deny": [],
     "ask": []

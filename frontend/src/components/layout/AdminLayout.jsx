@@ -4,9 +4,10 @@ import {
   LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings,
   LogOut, Menu, X, ChevronDown, ChevronRight, Bell, Search,
   BarChart3, Truck, Palette, UserCog, Store, CreditCard,
-  MessageSquare, Calendar, HelpCircle, Moon, Sun, User
+  MessageSquare, Calendar, HelpCircle, Moon, Sun, User, UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useApplicationStats } from '../../hooks/useApplicationStats';
 
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -19,13 +20,14 @@ const AdminLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { stats: applicationStats } = useApplicationStats();
 
   // Menu items configuration
   const menuItems = [
     {
       title: 'Dashboard',
       icon: LayoutDashboard,
-      path: '/dashboard',
+      path: '/admin/dashboard',
       badge: null
     },
     {
@@ -47,9 +49,15 @@ const AdminLayout = ({ children }) => {
       subMenu: [
         { title: 'All Products', path: '/admin/products' },
         { title: 'Categories', path: '/admin/categories' },
-        { title: 'Inventory', path: '/admin/products/inventory' },
+        { title: 'Inventory Management', path: '/admin/inventory' },
         { title: 'Reviews', path: '/admin/products/reviews' }
       ]
+    },
+    {
+      title: 'Inventory',
+      icon: Package,
+      path: '/admin/inventory',
+      badge: null
     },
     {
       title: 'Orders',
@@ -61,7 +69,19 @@ const AdminLayout = ({ children }) => {
     {
       title: 'Suppliers',
       icon: Truck,
-      path: '/admin/suppliers'
+      path: '/admin/suppliers',
+      subMenu: [
+        { title: 'All Suppliers', path: '/admin/suppliers' },
+        { title: 'Supplier Applications', path: '/admin/supplier-applications' },
+        { title: 'Application Analytics', path: '/admin/suppliers/analytics' }
+      ]
+    },
+    {
+      title: 'Applications',
+      icon: UserCheck,
+      path: '/admin/supplier-applications',
+      badge: applicationStats.pending > 0 ? applicationStats.pending.toString() : null,
+      badgeColor: applicationStats.pending > 0 ? 'bg-orange-500' : null
     },
     {
       title: 'Interior Designers',

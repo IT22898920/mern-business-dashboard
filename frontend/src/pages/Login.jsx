@@ -25,10 +25,7 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      console.log('DEBUG: useEffect redirect - user:', user);
-      console.log('DEBUG: useEffect redirect - user.role:', user.role);
       const roleBasedPath = getRoleBasedRedirect(user.role);
-      console.log('DEBUG: useEffect redirect - roleBasedPath:', roleBasedPath);
       navigate(roleBasedPath, { replace: true });
     }
   }, [isAuthenticated, user, navigate, from]);
@@ -69,15 +66,8 @@ const Login = () => {
     });
 
     if (result.success) {
-      // Debug logging
-      console.log('DEBUG: Login result:', result);
-      console.log('DEBUG: User object:', result.user);
-      console.log('DEBUG: User role:', result.user?.role);
-      console.log('DEBUG: User role type:', typeof result.user?.role);
-      
       // Get role-based redirect path
       const roleBasedPath = getRoleBasedRedirect(result.user?.role);
-      console.log('DEBUG: Role-based path:', roleBasedPath);
       
       // Always redirect to role-based dashboard for proper user experience
       navigate(roleBasedPath, { replace: true });

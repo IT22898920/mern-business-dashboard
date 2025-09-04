@@ -107,11 +107,9 @@ const Register = () => {
     setErrors({});
 
     const result = await register({
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
+      name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
       email: formData.email.toLowerCase().trim(),
       phone: formData.phone.trim(),
-      address: formData.address.trim(),
       password: formData.password,
       role: formData.role,
     });

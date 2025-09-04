@@ -23,6 +23,11 @@ import InventoryManagement from './pages/admin/InventoryManagement';
 import StaffDashboard from './pages/dashboards/StaffDashboard';
 import SupplierDashboard from './pages/dashboards/SupplierDashboard';
 import DesignerDashboard from './pages/dashboards/DesignerDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ProductsCatalog from './pages/ProductsCatalog';
+import ProductDetail from './pages/ProductDetail';
+import SupplierApplication from './pages/SupplierApplication';
+import SupplierApplicationsManagement from './pages/admin/SupplierApplicationsManagement';
 
 // 404 Page Component
 const NotFound = () => (
@@ -88,10 +93,40 @@ function App() {
           path="/home"
           element={<InteriorDesignHomePage />}
         />
+        
+        {/* Products route - Public route for all users */}
+        <Route
+          path="/products"
+          element={<ProductsCatalog />}
+        />
+        
+        {/* Product Detail route - Public route */}
+        <Route
+          path="/product/:id"
+          element={<ProductDetail />}
+        />
+        
+        {/* Supplier Application route - Protected route */}
+        <Route
+          path="/apply-supplier"
+          element={
+            <ProtectedRoute>
+              <SupplierApplication />
+            </ProtectedRoute>
+          }
+        />
 
 
 
             {/* Admin Only Routes */}
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/admin/products" 
               element={
@@ -109,10 +144,18 @@ function App() {
               } 
             />
             <Route 
-              path="/admin/products/inventory" 
+              path="/admin/inventory" 
+              element={
+                <ProtectedRoute roles={['admin', 'employee']}>
+                  <InventoryManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/supplier-applications" 
               element={
                 <ProtectedRoute roles={['admin']}>
-                  <InventoryManagement />
+                  <SupplierApplicationsManagement />
                 </ProtectedRoute>
               } 
             />

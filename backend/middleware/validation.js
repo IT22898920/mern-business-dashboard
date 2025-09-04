@@ -15,6 +15,11 @@ export const validateRegister = [
     .normalizeEmail()
     .toLowerCase(),
     
+  body('phone')
+    .optional()
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
+    .withMessage('Please provide a valid phone number'),
+    
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long')

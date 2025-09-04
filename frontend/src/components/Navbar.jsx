@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, X, Home, Sofa, Users, Phone, LogIn, UserPlus, LogOut } from "lucide-react";
+import { Menu, X, Home, Sofa, Users, Phone, LogIn, UserPlus, LogOut, Building2, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -33,13 +33,13 @@ const Navbar = () => {
                 <Home className="h-4 w-4" />
                 <span>Home</span>
               </Link>
-              <a
-                href="#interior-design"
+              <Link
+                to="/products"
                 className="flex items-center space-x-1 text-gray-700 hover:text-pink-500 transition-colors duration-300 font-medium"
               >
                 <Sofa className="h-4 w-4" />
                 <span>Products</span>
-              </a>
+              </Link>
               <a
                 href="#about"
                 className="flex items-center space-x-1 text-gray-700 hover:text-blue-500 transition-colors duration-300"
@@ -56,6 +56,24 @@ const Navbar = () => {
               </a>
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
+                  {(user?.role === 'admin' || user?.role === 'employee') && (
+                    <Link
+                      to="/admin/inventory"
+                      className="flex items-center space-x-1 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transform hover:scale-105 transition-all duration-300"
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Inventory</span>
+                    </Link>
+                  )}
+                  {user?.role !== 'supplier' && user?.role !== 'admin' && (
+                    <Link
+                      to="/apply-supplier"
+                      className="flex items-center space-x-1 bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transform hover:scale-105 transition-all duration-300"
+                    >
+                      <Building2 className="h-4 w-4" />
+                      <span>Apply as Supplier</span>
+                    </Link>
+                  )}
                   <span className="text-gray-700">Welcome, {user?.name}</span>
                   <button
                     onClick={logout}
@@ -108,13 +126,13 @@ const Navbar = () => {
                 <Home className="h-4 w-4" />
                 <span>Home</span>
               </Link>
-              <a
-                href="#interior-design"
+              <Link
+                to="/products"
                 className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 block px-3 py-2 font-medium transition-colors duration-300"
               >
                 <Sofa className="h-4 w-4" />
                 <span>Products</span>
-              </a>
+              </Link>
               <a
                 href="#about"
                 className="flex items-center space-x-2 text-gray-700 hover:text-blue-500 block px-3 py-2 transition-colors duration-300"
@@ -132,6 +150,24 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <div className="px-3 py-2 space-y-2">
                   <div className="text-gray-700 text-sm">Welcome, {user?.name}</div>
+                  {(user?.role === 'admin' || user?.role === 'employee') && (
+                    <Link
+                      to="/admin/inventory"
+                      className="flex items-center space-x-2 w-full bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-all duration-300"
+                    >
+                      <Package className="h-4 w-4" />
+                      <span>Inventory Management</span>
+                    </Link>
+                  )}
+                  {user?.role !== 'supplier' && user?.role !== 'admin' && (
+                    <Link
+                      to="/apply-supplier"
+                      className="flex items-center space-x-2 w-full bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-all duration-300"
+                    >
+                      <Building2 className="h-4 w-4" />
+                      <span>Apply as Supplier</span>
+                    </Link>
+                  )}
                   <button
                     onClick={logout}
                     className="flex items-center space-x-2 w-full bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-all duration-300"

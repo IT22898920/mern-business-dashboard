@@ -1,5 +1,6 @@
 import { verifyToken } from '../utils/jwt.js';
 import User from '../models/User.js';
+import mongoose from 'mongoose';
 
 // Protect routes - check if user is authenticated
 export const protect = async (req, res, next) => {
@@ -32,7 +33,13 @@ export const protect = async (req, res, next) => {
     }
 
     // Check if user still exists
-    const user = await User.findById(decoded.userId);
+    let user = null;
+    
+    // Only try to find user if userId is a valid ObjectId
+    if (mongoose.isValidObjectId(decoded.userId)) {
+      user = await User.findById(decoded.userId);
+    }
+    
     if (!user) {
       return res.status(401).json({
         status: 'error',
@@ -122,7 +129,7 @@ export const optionalAuth = async (req, res, next) => {
     if (token) {
       const decoded = verifyToken(token);
       
-      if (decoded.type === 'access') {
+      if (decoded.type === 'access' && mongoose.isValidObjectId(decoded.userId)) {
         const user = await User.findById(decoded.userId);
         if (user && user.isActive && !user.isLocked()) {
           req.user = user;

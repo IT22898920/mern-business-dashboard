@@ -13,6 +13,8 @@ import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
 import demoRoutes from './routes/demoRoutes.js';
+import supplierApplicationRoutes from './routes/supplierApplications.js';
+import inventoryRoutes from './routes/inventory.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -30,10 +32,10 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(mongoSanitize());
 
-// Rate limiting - more lenient for development
+// Rate limiting - very lenient for development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // More requests in dev
+  max: process.env.NODE_ENV === 'production' ? 100 : 10000, // Much higher for dev
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -80,6 +82,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/supplier-applications', supplierApplicationRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // Demo routes (for development without database)
 app.use('/api/demo', demoRoutes);

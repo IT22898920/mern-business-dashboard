@@ -4,28 +4,17 @@
  * @returns {string} - The path to redirect to
  */
 export const getRoleBasedRedirect = (userRole) => {
-  console.log('DEBUG: getRoleBasedRedirect called with:', userRole);
-  console.log('DEBUG: userRole type:', typeof userRole);
-  console.log('DEBUG: userRole === "admin":', userRole === 'admin');
-  
   switch (userRole) {
     case 'admin':
-      console.log('DEBUG: Returning admin path');
-      return '/admin/products';
+      return '/admin/dashboard';
     case 'employee':
-      console.log('DEBUG: Returning employee path');
       return '/staff/dashboard';
     case 'supplier':
-      console.log('DEBUG: Returning supplier path');
       return '/supplier/dashboard';
     case 'interior_designer':
-      console.log('DEBUG: Returning interior_designer path');
       return '/designer/dashboard';
     case 'customer':
-      console.log('DEBUG: Returning customer path');
-      return '/home';
     default:
-      console.log('DEBUG: Returning default path');
       return '/home';
   }
 };

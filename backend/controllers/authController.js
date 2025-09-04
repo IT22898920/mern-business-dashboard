@@ -28,7 +28,7 @@ export const register = asyncHandler(async (req, res) => {
     });
   }
 
-  const { name, email, password, role, avatar } = req.body;
+  const { name, email, phone, password, role, avatar } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -62,6 +62,7 @@ export const register = asyncHandler(async (req, res) => {
   const user = new User({
     name: name.trim(),
     email: email.toLowerCase().trim(),
+    phone: phone ? phone.trim() : undefined,
     password,
     role: role || 'user',
     avatar: avatarData
