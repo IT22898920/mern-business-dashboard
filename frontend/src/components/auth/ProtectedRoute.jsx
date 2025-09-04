@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children, roles = [], redirectTo = '/login' }) => {
           <p className="text-secondary-600 mb-4">
             You don't have permission to access this page.
           </p>
-          <Navigate to="/dashboard" replace />
+          <Navigate to="/home" replace />
         </div>
       </div>
     );

@@ -31,10 +31,10 @@ const NotFound = () => (
         The page you're looking for doesn't exist.
       </p>
       <a
-        href="/dashboard"
+        href="/home"
         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
       >
-        Go to Dashboard
+        Go to Home
       </a>
     </div>
   </div>
@@ -80,14 +80,10 @@ function App() {
               } 
             />
 
-        {/* Home route with ProtectedRoute */}
+        {/* Home route - Public route */}
         <Route
           path="/home"
-          element={
-            <ProtectedRoute>
-              <InteriorDesignHomePage />
-            </ProtectedRoute>
-          }
+          element={<InteriorDesignHomePage />}
         />
 
 
@@ -177,7 +173,7 @@ function App() {
             />
 
             {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
 
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />

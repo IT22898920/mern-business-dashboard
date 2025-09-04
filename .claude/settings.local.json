@@ -21,7 +21,9 @@
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
-      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)"
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

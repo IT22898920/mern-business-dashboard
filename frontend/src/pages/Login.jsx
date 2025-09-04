@@ -18,8 +18,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get redirect path from location state or default to dashboard
-  const from = location.state?.from?.pathname || '/Home';
+  // Get redirect path from location state or default to home
+  const from = location.state?.from?.pathname || '/home';
 
   // Redirect if already authenticated
   useEffect(() => {

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { Menu, X, Home, Sofa, Users, Phone } from "lucide-react";
+import { Menu, X, Home, Sofa, Users, Phone, LogIn, UserPlus, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -23,13 +26,13 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-8">
-              <a
-                href="#home"
+              <Link
+                to="/home"
                 className="flex items-center space-x-1 text-gray-700 hover:text-purple-600 transition-colors duration-300"
               >
                 <Home className="h-4 w-4" />
                 <span>Home</span>
-              </a>
+              </Link>
               <a
                 href="#interior-design"
                 className="flex items-center space-x-1 text-gray-700 hover:text-pink-500 transition-colors duration-300 font-medium"
@@ -51,9 +54,35 @@ const Navbar = () => {
                 <Phone className="h-4 w-4" />
                 <span>Contact</span>
               </a>
-              <button className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-6 py-2 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                Shop Now
-              </button>
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-gray-700">Welcome, {user?.name}</span>
+                  <button
+                    onClick={logout}
+                    className="flex items-center space-x-1 bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transform hover:scale-105 transition-all duration-300"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link
+                    to="/login"
+                    className="flex items-center space-x-1 text-purple-600 hover:text-purple-700 font-medium transition-colors duration-300"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex items-center space-x-1 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-4 py-2 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Register</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
@@ -72,13 +101,13 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t">
-              <a
-                href="#home"
+              <Link
+                to="/home"
                 className="flex items-center space-x-2 text-gray-700 hover:text-purple-600 block px-3 py-2 transition-colors duration-300"
               >
                 <Home className="h-4 w-4" />
                 <span>Home</span>
-              </a>
+              </Link>
               <a
                 href="#interior-design"
                 className="flex items-center space-x-2 text-gray-700 hover:text-pink-500 block px-3 py-2 font-medium transition-colors duration-300"
@@ -100,9 +129,35 @@ const Navbar = () => {
                 <Phone className="h-4 w-4" />
                 <span>Contact</span>
               </a>
-              <button className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-6 py-2 rounded-full mx-3 mt-2 hover:shadow-lg transition-all duration-300">
-                Shop Now
-              </button>
+              {isAuthenticated ? (
+                <div className="px-3 py-2 space-y-2">
+                  <div className="text-gray-700 text-sm">Welcome, {user?.name}</div>
+                  <button
+                    onClick={logout}
+                    className="flex items-center space-x-2 w-full bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-all duration-300"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="px-3 py-2 space-y-2">
+                  <Link
+                    to="/login"
+                    className="flex items-center space-x-2 w-full text-purple-600 hover:text-purple-700 font-medium px-3 py-2 border border-purple-600 rounded-full text-center transition-colors duration-300"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex items-center space-x-2 w-full bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-4 py-2 rounded-full hover:shadow-lg transition-all duration-300"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Register</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

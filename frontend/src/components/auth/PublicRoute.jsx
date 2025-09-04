@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../ui/LoadingSpinner';
 
-const PublicRoute = ({ children, redirectTo = '/dashboard' }) => {
+const PublicRoute = ({ children, redirectTo = '/home' }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   // Show loading spinner while checking authentication
@@ -15,7 +15,7 @@ const PublicRoute = ({ children, redirectTo = '/dashboard' }) => {
     );
   }
 
-  // Redirect to dashboard if already authenticated
+  // Redirect to home if already authenticated
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;
   }
