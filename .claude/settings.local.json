@@ -9,7 +9,19 @@
       "Bash(npm uninstall:*)",
       "Bash(npm run dev:*)",
       "Bash(curl:*)",
-      "Bash(npm run seed:*)"
+      "Bash(npm run seed:*)",
+      "Bash(pkill:*)",
+      "Bash(node server.js)",
+      "Bash(lsof:*)",
+      "Bash(node:*)",
+      "Bash(kill:*)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Bash(npm start)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
+      "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)"
     ],
     "deny": [],
     "ask": []

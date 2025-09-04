@@ -147,6 +147,7 @@ const Login = () => {
             </p>
           </div>
 
+
           {/* Form with Glass Morphism */}
           <div 
             className={`backdrop-blur-xl bg-white/70 p-8 rounded-2xl shadow-2xl border border-white/40 transition-all duration-500 ${isFormFocused ? 'bg-white/80 scale-105 shadow-3xl' : ''}`}
@@ -289,7 +290,7 @@ const Login = () => {
       </div>
 
       {/* CSS Animations in Style Tag */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-10px) rotate(5deg); }

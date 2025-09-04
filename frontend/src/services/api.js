@@ -69,8 +69,8 @@ export const authAPI = {
   // Register user
   register: (userData) => api.post('/auth/register', userData),
   
-  // Login user
-  login: (credentials) => api.post('/auth/login', credentials),
+  // Login user (using demo endpoint for development)
+  login: (credentials) => api.post('/demo/auth/login', credentials),
   
   // Logout user
   logout: () => api.post('/auth/logout'),

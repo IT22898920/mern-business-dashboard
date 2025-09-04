@@ -15,6 +15,9 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
+import ProductsManagement from './pages/admin/ProductsManagement';
+import CategoryManagement from './pages/admin/CategoryManagement';
+import InventoryManagement from './pages/admin/InventoryManagement';
 
 // 404 Page Component
 const NotFound = () => (
@@ -86,6 +89,30 @@ function App() {
             />
 
             {/* Admin Only Routes */}
+            <Route 
+              path="/admin/products" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <ProductsManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/categories" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <CategoryManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/products/inventory" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <InventoryManagement />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/admin/*" 
               element={

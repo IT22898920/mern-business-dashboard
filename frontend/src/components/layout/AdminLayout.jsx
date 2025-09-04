@@ -46,7 +46,7 @@ const AdminLayout = ({ children }) => {
       badge: '234',
       subMenu: [
         { title: 'All Products', path: '/admin/products' },
-        { title: 'Categories', path: '/admin/products/categories' },
+        { title: 'Categories', path: '/admin/categories' },
         { title: 'Inventory', path: '/admin/products/inventory' },
         { title: 'Reviews', path: '/admin/products/reviews' }
       ]
