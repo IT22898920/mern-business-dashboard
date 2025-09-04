@@ -15,6 +15,8 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
+import { Home } from 'lucide-react';
+import InteriorDesignHomePage from './pages/Home';
 
 // 404 Page Component
 const NotFound = () => (
@@ -75,15 +77,17 @@ function App() {
               } 
             />
 
-            {/* Protected Routes */}
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
+        {/* Home route with ProtectedRoute */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <InteriorDesignHomePage />
+            </ProtectedRoute>
+          }
+        />
+
+
 
             {/* Admin Only Routes */}
             <Route 
