@@ -4,6 +4,7 @@ import { User, Mail, Lock, UserPlus, Sparkles, Shield, Zap, Eye, EyeOff, Phone, 
 import { useAuth } from '../contexts/AuthContext';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import { getRoleBasedRedirect } from '../utils/roleRedirect';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -20,15 +21,16 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [isFormFocused, setIsFormFocused] = useState(false);
   
-  const { register, isAuthenticated, isLoading } = useAuth();
+  const { register, isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/home', { replace: true });
+    if (isAuthenticated && user) {
+      const roleBasedPath = getRoleBasedRedirect(user.role);
+      navigate(roleBasedPath, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const validateForm = () => {
     const newErrors = {};

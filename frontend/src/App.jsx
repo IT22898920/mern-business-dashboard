@@ -20,6 +20,9 @@ import InteriorDesignHomePage from './pages/Home';
 import ProductsManagement from './pages/admin/ProductsManagement';
 import CategoryManagement from './pages/admin/CategoryManagement';
 import InventoryManagement from './pages/admin/InventoryManagement';
+import StaffDashboard from './pages/dashboards/StaffDashboard';
+import SupplierDashboard from './pages/dashboards/SupplierDashboard';
+import DesignerDashboard from './pages/dashboards/DesignerDashboard';
 
 // 404 Page Component
 const NotFound = () => (
@@ -129,6 +132,14 @@ function App() {
 
             {/* Staff Routes (Admin + Employee) */}
             <Route 
+              path="/staff/dashboard" 
+              element={
+                <ProtectedRoute roles={['admin', 'employee']}>
+                  <StaffDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/staff/*" 
               element={
                 <ProtectedRoute roles={['admin', 'employee']}>
@@ -144,6 +155,14 @@ function App() {
 
             {/* Supplier Routes */}
             <Route 
+              path="/supplier/dashboard" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/supplier/*" 
               element={
                 <ProtectedRoute roles={['admin', 'supplier']}>
@@ -158,6 +177,14 @@ function App() {
             />
 
             {/* Designer Routes */}
+            <Route 
+              path="/designer/dashboard" 
+              element={
+                <ProtectedRoute roles={['admin', 'interior_designer']}>
+                  <DesignerDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/designer/*" 
               element={
