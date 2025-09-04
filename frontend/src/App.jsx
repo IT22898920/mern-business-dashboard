@@ -17,6 +17,9 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import { Home } from 'lucide-react';
 import InteriorDesignHomePage from './pages/Home';
+import ProductsManagement from './pages/admin/ProductsManagement';
+import CategoryManagement from './pages/admin/CategoryManagement';
+import InventoryManagement from './pages/admin/InventoryManagement';
 
 // 404 Page Component
 const NotFound = () => (
@@ -90,6 +93,30 @@ function App() {
 
 
             {/* Admin Only Routes */}
+            <Route 
+              path="/admin/products" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <ProductsManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/categories" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <CategoryManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/products/inventory" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <InventoryManagement />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/admin/*" 
               element={

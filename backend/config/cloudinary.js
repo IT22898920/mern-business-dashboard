@@ -1,13 +1,21 @@
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Configure Cloudinary
-cloudinary.config({
+const cloudinaryConfig = {
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
-});
+};
+
+// Debug removed - config working
+
+cloudinary.config(cloudinaryConfig);
 
 // Configure Cloudinary storage for Multer
 const storage = new CloudinaryStorage({
@@ -98,6 +106,68 @@ export const uploadBase64ToCloudinary = async (base64String, folder = 'mern-busi
   } catch (error) {
     console.error('Cloudinary base64 upload error:', error);
     throw new Error('Failed to upload base64 image to Cloudinary');
+  }
+};
+
+// Upload product image to Cloudinary (accepts both file and base64)
+export const uploadProductImage = async (imageData, options = {}) => {
+  try {
+    const {
+      folder = 'mern-business-dashboard/products',
+      width = 800,
+      height = 600,
+      quality = 'auto'
+    } = options;
+
+    const uploadOptions = {
+      folder: folder,
+      transformation: [
+        { width, height, crop: 'fill' },
+        { quality, fetch_format: 'auto' }
+      ],
+      public_id: `product_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+    };
+
+    let result;
+    
+    // Check if imageData is a base64 string or file buffer
+    if (typeof imageData === 'string' && imageData.startsWith('data:')) {
+      // Base64 upload
+      result = await cloudinary.uploader.upload(imageData, uploadOptions);
+    } else {
+      // File upload
+      result = await cloudinary.uploader.upload(imageData, uploadOptions);
+    }
+
+    return {
+      public_id: result.public_id,
+      url: result.secure_url,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      bytes: result.bytes
+    };
+  } catch (error) {
+    console.error('Cloudinary product image upload error:', error);
+    throw new Error('Failed to upload product image to Cloudinary');
+  }
+};
+
+// Upload multiple product images
+export const uploadMultipleProductImages = async (imagesData, options = {}) => {
+  try {
+    const uploadPromises = imagesData.map((imageData, index) => 
+      uploadProductImage(imageData, {
+        ...options,
+        folder: `${options.folder || 'mern-business-dashboard/products'}`
+      })
+    );
+
+    const results = await Promise.all(uploadPromises);
+    return results;
+  } catch (error) {
+    console.error('Multiple product images upload error:', error);
+    throw new Error('Failed to upload multiple product images');
   }
 };
 

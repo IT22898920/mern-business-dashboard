@@ -23,8 +23,8 @@ export const protect = async (req, res, next) => {
     // Verify token
     const decoded = verifyToken(token);
     
-    // Check if token type is correct
-    if (decoded.type !== 'access') {
+    // Check if token type is correct (only if type field exists - for backward compatibility)
+    if (decoded.type && decoded.type !== 'access') {
       return res.status(401).json({
         status: 'error',
         message: 'Invalid token type.'
