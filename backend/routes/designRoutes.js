@@ -6,14 +6,15 @@ import {
   updateDesign,
   deleteDesign
 } from '../controllers/designController.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Routes without multer, only JSON
-router.post('/add', addDesign);
-router.get('/all', getAllDesigns);
-router.get('/:id', getDesignById);
-router.put('/update/:id', updateDesign);
-router.delete('/delete/:id', deleteDesign);
+// Routes with authentication
+router.post('/add', protect, addDesign);
+router.get('/all', optionalAuth, getAllDesigns); // Optional auth for public viewing
+router.get('/:id', optionalAuth, getDesignById);
+router.put('/update/:id', protect, updateDesign);
+router.delete('/delete/:id', protect, deleteDesign);
 
 export default router;

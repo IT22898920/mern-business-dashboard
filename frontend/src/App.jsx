@@ -26,6 +26,7 @@ import DesignerDashboard from './pages/dashboards/DesignerDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProductsCatalog from './pages/ProductsCatalog';
 import ProductDetail from './pages/ProductDetail';
+import DesignDetail from './pages/DesignDetail';
 import SupplierApplication from './pages/SupplierApplication';
 import SupplierApplicationsManagement from './pages/admin/SupplierApplicationsManagement';
 
@@ -104,6 +105,12 @@ function App() {
         <Route
           path="/product/:id"
           element={<ProductDetail />}
+        />
+        
+        {/* Design Detail route - Public route */}
+        <Route
+          path="/design/:id"
+          element={<DesignDetail />}
         />
         
         {/* Supplier Application route - Protected route */}

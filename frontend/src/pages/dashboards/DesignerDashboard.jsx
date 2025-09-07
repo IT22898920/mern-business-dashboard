@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Home, PlusSquare, LogOut, Eye, Edit2, Trash2, Save, X, TrendingUp, Clock, CheckCircle, Loader } from 'lucide-react';
+import { Users, Home, PlusSquare, LogOut, Eye, Edit2, Trash2, Save, X, TrendingUp, Clock, CheckCircle, Loader, Mail, Phone, Calendar, MessageSquare, Bell, Trash } from 'lucide-react';
+import { getClientContacts, updateClientContactStatus } from '../../services/clientContactService';
+import { getNotifications, markAsRead, markAllAsRead, deleteNotification, getNotificationCount } from '../../services/notificationService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DesignerDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [formData, setFormData] = useState({
     projectName: '',
@@ -11,10 +15,15 @@ const DesignerDashboard = () => {
     imageURL: ''
   });
   const [designs, setDesigns] = useState([]);
+  const [clientContacts, setClientContacts] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [imagePreview, setImagePreview] = useState('');
   const [imageError, setImageError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingClients, setIsLoadingClients] = useState(false);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
 
   // For editing
   const [editingId, setEditingId] = useState(null);
@@ -35,9 +44,59 @@ const DesignerDashboard = () => {
     }
   };
 
+  // Fetch client contacts
+  const fetchClientContacts = async () => {
+    if (!user?.email) return;
+    
+    setIsLoadingClients(true);
+    try {
+      const response = await getClientContacts(user.email);
+      setClientContacts(response.data || []);
+    } catch (error) {
+      console.error('Error fetching client contacts:', error);
+    } finally {
+      setIsLoadingClients(false);
+    }
+  };
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    if (!user?.email) return;
+    
+    setIsLoadingNotifications(true);
+    try {
+      const response = await getNotifications(user.email);
+      setNotifications(response.data.notifications || []);
+      setUnreadCount(response.data.unreadCount || 0);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  };
+
+  // Fetch notification count
+  const fetchNotificationCount = async () => {
+    if (!user?.email) return;
+    
+    try {
+      const response = await getNotificationCount(user.email);
+      setUnreadCount(response.data.unreadCount || 0);
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'view' || activeTab === 'dashboard') fetchDesigns();
-  }, [activeTab]);
+    if (activeTab === 'clients') fetchClientContacts();
+    if (activeTab === 'notifications') fetchNotifications();
+    
+    // Always fetch notification count when user changes
+    if (user?.email) {
+      fetchNotificationCount();
+    }
+  }, [activeTab, user?.email]);
 
   // Add Project Handlers
   const handleChange = (e) => {
@@ -150,6 +209,47 @@ const DesignerDashboard = () => {
     }
   };
 
+  // Update client contact status
+  const handleStatusUpdate = async (contactId, newStatus) => {
+    try {
+      await updateClientContactStatus(contactId, newStatus);
+      fetchClientContacts(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+
+  // Handle notification actions
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await markAsRead(notificationId);
+      fetchNotifications(); // Refresh notifications
+      fetchNotificationCount(); // Refresh count
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead(user.email);
+      fetchNotifications(); // Refresh notifications
+      fetchNotificationCount(); // Refresh count
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await deleteNotification(notificationId);
+      fetchNotifications(); // Refresh notifications
+      fetchNotificationCount(); // Refresh count
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
   // Logout handler
   const handleLogout = async () => {
     const confirmLogout = window.confirm('Are you sure you want to logout?');
@@ -223,7 +323,9 @@ const DesignerDashboard = () => {
               { tab: 'dashboard', icon: <Home className="w-5 h-5 mr-3" />, label: 'Dashboard' },
               { tab: 'add', icon: <PlusSquare className="w-5 h-5 mr-3" />, label: 'Add Project' },
               { tab: 'view', icon: <Eye className="w-5 h-5 mr-3" />, label: 'View Designs' },
-            ].map(({ tab, icon, label }) => (
+              { tab: 'clients', icon: <Users className="w-5 h-5 mr-3" />, label: 'Clients' },
+              { tab: 'notifications', icon: <Bell className="w-5 h-5 mr-3" />, label: 'Notifications', badge: unreadCount },
+            ].map(({ tab, icon, label, badge }) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -239,6 +341,11 @@ const DesignerDashboard = () => {
                     {icon}
                   </div>
                   <span className="font-medium">{label}</span>
+                  {badge > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                      {badge}
+                    </span>
+                  )}
                 </div>
                 {activeTab === tab && (
                   <div className="absolute right-2 w-1 h-8 bg-white rounded-full animate-pulse"></div>
@@ -247,12 +354,6 @@ const DesignerDashboard = () => {
             ))}
             
             <div className="pt-4 border-t border-gray-200 mt-4">
-              <button 
-                className="group flex items-center p-4 w-full rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 text-gray-700"
-              >
-                <Users className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" /> 
-                <span className="font-medium">Clients</span>
-              </button>
               <button 
                 onClick={handleLogout}
                 className="group flex items-center p-4 w-full rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-300 transform hover:scale-105 text-gray-700"
@@ -639,6 +740,284 @@ const DesignerDashboard = () => {
                       </div>
                     ))
                   )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Clients Tab */}
+          {activeTab === 'clients' && (
+            <div className="animate-in fade-in duration-700">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                  Client Inquiries
+                </h2>
+                <p className="text-gray-600">Manage your client contacts and inquiries</p>
+                <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
+              </div>
+
+              {isLoadingClients ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <Loader className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-600" />
+                    <p className="text-gray-600">Loading client inquiries...</p>
+                  </div>
+                </div>
+              ) : clientContacts.length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="bg-white rounded-2xl p-12 shadow-xl">
+                    <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                      <MessageSquare className="w-12 h-12 text-purple-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">No Client Inquiries Yet</h3>
+                    <p className="text-gray-600 mb-6">When clients contact you through your designs, their inquiries will appear here</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-purple-50 to-blue-50">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {clientContacts.map((contact, index) => (
+                          <tr key={contact._id} className="hover:bg-gray-50 transition-colors duration-200">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="flex-shrink-0 h-10 w-10 relative">
+                                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+                                    <span className="text-white font-semibold text-sm">
+                                      {contact.clientName.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  {/* Notification indicator for new contacts */}
+                                  {new Date(contact.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                      <Bell className="w-2 h-2 text-white" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="ml-4">
+                                  <div className="text-sm font-medium text-gray-900 flex items-center space-x-2">
+                                    <span>{contact.clientName}</span>
+                                    {new Date(contact.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                                      <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                        New
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-sm text-gray-500">{contact.clientEmail}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{contact.projectName}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex flex-col space-y-1">
+                                <div className="flex items-center text-sm text-gray-900">
+                                  <Mail className="w-4 h-4 mr-2 text-purple-500" />
+                                  {contact.clientEmail}
+                                </div>
+                                {contact.clientPhone && (
+                                  <div className="flex items-center text-sm text-gray-500">
+                                    <Phone className="w-4 h-4 mr-2 text-blue-500" />
+                                    {contact.clientPhone}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900 max-w-xs truncate" title={contact.message}>
+                                {contact.message}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <select
+                                value={contact.status}
+                                onChange={(e) => handleStatusUpdate(contact._id, e.target.value)}
+                                className={`px-3 py-1 text-xs font-medium rounded-full border-0 focus:ring-2 focus:ring-purple-500 ${
+                                  contact.status === 'new' ? 'bg-blue-100 text-blue-800' :
+                                  contact.status === 'contacted' ? 'bg-yellow-100 text-yellow-800' :
+                                  contact.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
+                                  contact.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="closed">Closed</option>
+                              </select>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Calendar className="w-4 h-4 mr-2" />
+                                {new Date(contact.createdAt).toLocaleDateString()}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex space-x-2">
+                                <a
+                                  href={`mailto:${contact.clientEmail}?subject=Re: ${contact.projectName} Inquiry`}
+                                  className="text-purple-600 hover:text-purple-900 transition-colors duration-200"
+                                  title="Reply via Email"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                </a>
+                                {contact.clientPhone && (
+                                  <a
+                                    href={`tel:${contact.clientPhone}`}
+                                    className="text-blue-600 hover:text-blue-900 transition-colors duration-200"
+                                    title="Call Client"
+                                  >
+                                    <Phone className="w-4 h-4" />
+                                  </a>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <div className="animate-in fade-in duration-700">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                  Notifications
+                </h2>
+                <p className="text-gray-600">Stay updated with client inquiries and system alerts</p>
+                <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
+              </div>
+
+              {/* Notification Actions */}
+              {notifications.length > 0 && (
+                <div className="mb-6 flex justify-between items-center">
+                  <div className="text-sm text-gray-600">
+                    {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All notifications read'}
+                  </div>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 text-sm"
+                    >
+                      Mark All as Read
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {isLoadingNotifications ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <Loader className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-600" />
+                    <p className="text-gray-600">Loading notifications...</p>
+                  </div>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="bg-white rounded-2xl p-12 shadow-xl">
+                    <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                      <Bell className="w-12 h-12 text-purple-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">No Notifications Yet</h3>
+                    <p className="text-gray-600 mb-6">You'll receive notifications when clients contact you about your designs</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification._id}
+                      className={`bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl ${
+                        !notification.isRead ? 'border-l-4 border-purple-500 bg-purple-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <div className={`w-3 h-3 rounded-full ${
+                              notification.priority === 'urgent' ? 'bg-red-500' :
+                              notification.priority === 'high' ? 'bg-orange-500' :
+                              notification.priority === 'medium' ? 'bg-blue-500' :
+                              'bg-gray-400'
+                            }`}></div>
+                            <h3 className={`text-lg font-semibold ${
+                              !notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                            }`}>
+                              {notification.title}
+                            </h3>
+                            {!notification.isRead && (
+                              <span className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full">
+                                New
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="text-gray-600 mb-3">{notification.message}</p>
+                          
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <Users className="w-4 h-4" />
+                              <span>{notification.senderName}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Mail className="w-4 h-4" />
+                              <span>{notification.senderEmail}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{new Date(notification.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+
+                          {notification.relatedDesignId && (
+                            <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                <Eye className="w-4 h-4" />
+                                <span>Related to: {notification.relatedDesignId.projectName}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col space-y-2 ml-4">
+                          {!notification.isRead && (
+                            <button
+                              onClick={() => handleMarkAsRead(notification._id)}
+                              className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors duration-300 text-sm"
+                            >
+                              Mark Read
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteNotification(notification._id)}
+                            className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition-colors duration-300 text-sm flex items-center space-x-1"
+                          >
+                            <Trash className="w-3 h-3" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

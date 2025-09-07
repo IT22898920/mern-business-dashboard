@@ -78,6 +78,8 @@ import demoRoutes from './routes/demoRoutes.js';
 import supplierApplicationRoutes from './routes/supplierApplications.js';
 import inventoryRoutes from './routes/inventory.js';
 import designRoutes from './routes/designRoutes.js'; // Interior Designs
+import clientContactRoutes from './routes/clientContactRoutes.js'; // Client Contacts
+import notificationRoutes from './routes/notificationRoutes.js'; // Notifications
 
 // ------------------------
 // API Routes
@@ -92,6 +94,12 @@ app.use('/api/demo', demoRoutes);
 
 // Designs routes
 app.use('/api/designs', designRoutes);
+
+// Client contacts routes
+app.use('/api/client-contacts', clientContactRoutes);
+
+// Notifications routes
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
