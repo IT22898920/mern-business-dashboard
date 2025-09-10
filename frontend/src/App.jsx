@@ -2,6 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
+// Import clear auth utility for debugging
+import './utils/clearAuth';
+
 // Context Providers
 import { AuthProvider } from './contexts/AuthContext';
 import { AlertProvider } from './components/AlertSystem';
@@ -15,6 +18,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import EmailVerification from './pages/EmailVerification';
 import Dashboard from './pages/Dashboard';
 import { Home } from 'lucide-react';
 import InteriorDesignHomePage from './pages/Home';
@@ -89,6 +93,14 @@ function App() {
               element={
                 <PublicRoute>
                   <ResetPassword />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/verify-email" 
+              element={
+                <PublicRoute>
+                  <EmailVerification />
                 </PublicRoute>
               } 
             />

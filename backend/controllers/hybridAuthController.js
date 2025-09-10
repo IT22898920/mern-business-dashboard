@@ -16,8 +16,22 @@ const demoUsers = [
     _id: 'demo_user_id',
     email: 'user@example.com',
     name: 'Demo User',
-    role: 'customer',
+    role: 'user',
     password: 'user123'
+  },
+  {
+    _id: 'demo_admin_gmail',
+    email: 'admin@gmail.com',
+    name: 'Admin User',
+    role: 'admin',
+    password: '123456'
+  },
+  {
+    _id: 'demo_supplier_gmail',
+    email: 'supplier@gmail.com',
+    name: 'Supplier User',
+    role: 'supplier',
+    password: 'supplier123'
   }
 ];
 

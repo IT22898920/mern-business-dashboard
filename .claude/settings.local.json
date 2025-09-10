@@ -31,7 +31,9 @@
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Read(/mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Read(//mnt/c/Users/DELL/Pictures/Screenshots/**)",
-      "Bash(fuser:*)"
+      "Bash(fuser:*)",
+      "Bash(python3:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

@@ -13,6 +13,8 @@ export const getRoleBasedRedirect = (userRole) => {
       return '/supplier/dashboard';
     case 'interior_designer':
       return '/designer/dashboard';
+    case 'user':
+      return '/home';
     case 'customer':
     default:
       return '/home';

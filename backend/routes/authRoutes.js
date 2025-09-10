@@ -10,7 +10,8 @@ import {
   forgotPassword, 
   resetPassword, 
   verifyEmail, 
-  resendEmailVerification 
+  resendEmailVerification,
+  refreshToken 
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 import { uploadAvatar, handleMulterError } from '../config/cloudinary.js';
@@ -50,9 +51,11 @@ const passwordResetLimiter = rateLimit({
 router.post('/register', authLimiter, validateRegister, register);
 router.post('/login', authLimiter, validateLogin, login);
 router.post('/logout', logout);
+router.post('/refresh', refreshToken);
 router.post('/forgot-password', passwordResetLimiter, validateForgotPassword, forgotPassword);
 router.post('/reset-password', validateResetPassword, resetPassword);
 router.get('/verify-email/:token', verifyEmail);
+router.post('/verify-email', verifyEmail);
 
 // Protected routes (authentication required)
 router.use(protect); // All routes after this middleware require authentication

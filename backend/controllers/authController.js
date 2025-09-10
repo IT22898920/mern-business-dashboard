@@ -96,6 +96,56 @@ export const register = asyncHandler(async (req, res) => {
   });
 });
 
+// Refresh token endpoint
+export const refreshToken = asyncHandler(async (req, res) => {
+  let token;
+
+  // Get token from cookies or Authorization header
+  if (req.cookies?.token) {
+    token = req.cookies.token;
+  } else if (req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'No token provided'
+    });
+  }
+
+  try {
+    // Verify the token
+    const decoded = verifyToken(token);
+    
+    // Find the user
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // Generate new token
+    const newToken = createTokenAndSetCookie(res, user._id, false);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token refreshed successfully',
+      data: {
+        user: user.profile,
+        token: newToken
+      }
+    });
+  } catch (error) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Invalid or expired token. Please login again.'
+    });
+  }
+});
+
 // Login user
 export const login = asyncHandler(async (req, res) => {
   // Check for validation errors
@@ -379,7 +429,8 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
 // Verify email
 export const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.params;
+  // Handle both GET (/verify-email/:token) and POST (/verify-email) requests
+  const token = req.params.token || req.body.token;
 
   if (!token) {
     return res.status(400).json({

@@ -125,10 +125,11 @@ export const AuthProvider = ({ children }) => {
       // Clear invalid tokens
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('skipSessionExpiredToast');
       
+      // Don't show toast error for initial auth check
       dispatch({
-        type: AUTH_ACTION_TYPES.AUTH_ERROR,
-        payload: handleAPIError(error),
+        type: AUTH_ACTION_TYPES.LOGOUT,
       });
     }
   };
@@ -176,6 +177,7 @@ export const AuthProvider = ({ children }) => {
       // Store token and user data
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('skipSessionExpiredToast', 'true');
 
       dispatch({
         type: AUTH_ACTION_TYPES.LOGIN_SUCCESS,
@@ -207,6 +209,7 @@ export const AuthProvider = ({ children }) => {
       // Clear storage and state regardless of API call result
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('skipSessionExpiredToast');
       
       dispatch({ type: AUTH_ACTION_TYPES.LOGOUT });
       toast.success('Logged out successfully');
