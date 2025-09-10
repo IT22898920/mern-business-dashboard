@@ -73,6 +73,7 @@ const AdminLayout = ({ children }) => {
       subMenu: [
         { title: 'All Suppliers', path: '/admin/suppliers' },
         { title: 'Supplier Applications', path: '/admin/supplier-applications' },
+        { title: 'Supplier Responses', path: '/admin/reorder-responses' },
         { title: 'Application Analytics', path: '/admin/suppliers/analytics' }
       ]
     },
@@ -475,7 +476,7 @@ const AdminLayout = ({ children }) => {
       )}
 
       {/* CSS Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in {
           0% { opacity: 0; transform: translateY(-10px); }
           100% { opacity: 1; transform: translateY(0); }

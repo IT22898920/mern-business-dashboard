@@ -15,6 +15,7 @@ import categoryRoutes from './routes/categories.js';
 import demoRoutes from './routes/demoRoutes.js';
 import supplierApplicationRoutes from './routes/supplierApplications.js';
 import inventoryRoutes from './routes/inventory.js';
+import reorderRoutes from './routes/reorders.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -84,6 +85,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/supplier-applications', supplierApplicationRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/reorders', reorderRoutes);
 
 // Demo routes (for development without database)
 app.use('/api/demo', demoRoutes);

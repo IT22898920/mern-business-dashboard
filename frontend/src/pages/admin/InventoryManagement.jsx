@@ -12,11 +12,15 @@ import {
   TrendingDown,
   Edit,
   Eye,
-  History
+  History,
+  ShoppingCart,
+  Clock
 } from 'lucide-react';
 import AdminLayout from '../../components/layout/AdminLayout';
+import { useAuth } from '../../contexts/AuthContext';
 
 const InventoryManagement = () => {
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +32,7 @@ const InventoryManagement = () => {
   const [pagination, setPagination] = useState({});
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [showReorderModal, setShowReorderModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [adjustmentData, setAdjustmentData] = useState({
     type: 'restock',
@@ -39,6 +44,12 @@ const InventoryManagement = () => {
     supplierId: '',
     leadTime: 7,
     minimumOrderQuantity: 1
+  });
+  const [reorderData, setReorderData] = useState({
+    quantity: '',
+    urgency: 'medium',
+    message: '',
+    expectedDeliveryDate: ''
   });
 
   useEffect(() => {
@@ -176,6 +187,64 @@ const InventoryManagement = () => {
       minimumOrderQuantity: product.supplier_info?.minimum_order_quantity || 1
     });
     setShowSupplierModal(true);
+  };
+
+  const openReorderModal = (product) => {
+    setSelectedProduct(product);
+    setReorderData({
+      quantity: Math.max(product.stock.low_stock_threshold * 2, 10), // Default to 2x threshold
+      urgency: product.stock.available <= 0 ? 'urgent' : 'medium',
+      message: `Stock is running low for ${product.name}. Current stock: ${product.stock.available} units.`,
+      expectedDeliveryDate: new Date(Date.now() + (product.supplier_info?.lead_time || 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    });
+    setShowReorderModal(true);
+  };
+
+  const handleReorderSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedProduct.supplier) {
+      alert('No supplier assigned to this product. Please assign a supplier first.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/reorders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          productId: selectedProduct._id,
+          supplierId: selectedProduct.supplier._id,
+          quantity: parseInt(reorderData.quantity),
+          urgency: reorderData.urgency,
+          message: reorderData.message,
+          expectedDeliveryDate: reorderData.expectedDeliveryDate
+        })
+      });
+
+      if (response.ok) {
+        setShowReorderModal(false);
+        setReorderData({ quantity: '', urgency: 'medium', message: '', expectedDeliveryDate: '' });
+        alert('Reorder request sent to supplier successfully!');
+      } else {
+        const error = await response.json();
+        console.log('Reorder request error:', error);
+        if (response.status === 401) {
+          alert('Authentication expired. Please log in again.');
+          // Optional: redirect to login
+          window.location.href = '/login';
+        } else {
+          alert(`Error: ${error.message}`);
+        }
+      }
+    } catch (error) {
+      alert('Error sending reorder request');
+      console.error('Error:', error);
+    }
   };
 
   const getStockStatus = (product) => {
@@ -414,6 +483,15 @@ const InventoryManagement = () => {
                         >
                           <Users className="h-4 w-4" />
                         </button>
+                        {product.supplier && (
+                          <button
+                            onClick={() => openReorderModal(product)}
+                            className="text-green-600 hover:text-green-900 p-1 rounded"
+                            title="Request Reorder"
+                          >
+                            <ShoppingCart className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -635,6 +713,121 @@ const InventoryManagement = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reorder Request Modal */}
+      {showReorderModal && selectedProduct && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Request Reorder - {selectedProduct.name}
+                </h3>
+                <button
+                  onClick={() => setShowReorderModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Current Stock:</span> {selectedProduct.stock.available}
+                  </div>
+                  <div>
+                    <span className="font-medium">Low Stock Threshold:</span> {selectedProduct.stock.low_stock_threshold}
+                  </div>
+                  <div>
+                    <span className="font-medium">Supplier:</span> {selectedProduct.supplier?.name || 'Not Assigned'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Lead Time:</span> {selectedProduct.supplier_info?.lead_time || 'N/A'} days
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleReorderSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Quantity to Order *
+                    </label>
+                    <input
+                      type="number"
+                      value={reorderData.quantity}
+                      onChange={(e) => setReorderData({...reorderData, quantity: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                      min="1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Urgency Level
+                    </label>
+                    <select
+                      value={reorderData.urgency}
+                      onChange={(e) => setReorderData({...reorderData, urgency: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Expected Delivery Date
+                    </label>
+                    <input
+                      type="date"
+                      value={reorderData.expectedDeliveryDate}
+                      onChange={(e) => setReorderData({...reorderData, expectedDeliveryDate: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Message to Supplier
+                    </label>
+                    <textarea
+                      value={reorderData.message}
+                      onChange={(e) => setReorderData({...reorderData, message: e.target.value})}
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                      placeholder="Add any special instructions or notes for the supplier..."
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowReorderModal(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    Send Reorder Request
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
