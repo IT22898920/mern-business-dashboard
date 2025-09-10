@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
+import Design from '../models/Design.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
@@ -17,6 +18,7 @@ const seedData = async () => {
     await User.deleteMany({});
     await Category.deleteMany({});
     await Product.deleteMany({});
+    await Design.deleteMany({});
     console.log('Cleared existing data');
 
     // Create admin user
@@ -534,6 +536,66 @@ const seedData = async () => {
     }
     console.log('✅ Products created');
 
+    // Create sample designs
+    const designs = [
+      {
+        projectName: 'Modern Living Room Design',
+        clientName: 'Sarah Johnson',
+        contact: 'sarah.johnson@email.com',
+        status: 'Completed',
+        description: 'A contemporary living room design featuring minimalist furniture, neutral color palette, and strategic lighting to create a warm and inviting space.',
+        imageURL: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800'
+      },
+      {
+        projectName: 'Cozy Bedroom Retreat',
+        clientName: 'Michael Chen',
+        contact: 'michael.chen@email.com',
+        status: 'In Progress',
+        description: 'Creating a peaceful bedroom sanctuary with soft textures, calming colors, and functional storage solutions for a restful sleep environment.',
+        imageURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800'
+      },
+      {
+        projectName: 'Elegant Dining Space',
+        clientName: 'Emily Davis',
+        contact: 'emily.davis@email.com',
+        status: 'Review',
+        description: 'Sophisticated dining room design with a large wooden table, statement lighting, and elegant decor pieces for entertaining guests.',
+        imageURL: 'https://images.unsplash.com/photo-1549497538-303791108f95?w=800'
+      },
+      {
+        projectName: 'Home Office Setup',
+        clientName: 'David Wilson',
+        contact: 'david.wilson@email.com',
+        status: 'Completed',
+        description: 'Professional home office design with ergonomic furniture, proper lighting, and organized storage to maximize productivity.',
+        imageURL: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800'
+      },
+      {
+        projectName: 'Kitchen Renovation',
+        clientName: 'Lisa Anderson',
+        contact: 'lisa.anderson@email.com',
+        status: 'In Progress',
+        description: 'Complete kitchen makeover with modern appliances, custom cabinetry, and an open-concept layout for better functionality.',
+        imageURL: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800'
+      },
+      {
+        projectName: 'Kids Playroom',
+        clientName: 'Robert Taylor',
+        contact: 'robert.taylor@email.com',
+        status: 'Review',
+        description: 'Fun and safe playroom design with colorful furniture, creative storage solutions, and educational elements for children.',
+        imageURL: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800'
+      }
+    ];
+
+    const createdDesigns = [];
+    for (const designData of designs) {
+      const design = new Design(designData);
+      await design.save();
+      createdDesigns.push(design);
+    }
+    console.log('✅ Designs created');
+
     console.log('\n🎉 Test data seeded successfully!');
     console.log('\n📋 Test Accounts:');
     console.log('Admin: admin@gmail.com / 123456');
@@ -544,6 +606,7 @@ const seedData = async () => {
     console.log('\n📦 Sample Data:');
     console.log(`Categories: ${createdCategories.length}`);
     console.log(`Products: ${createdProducts.length}`);
+    console.log(`Designs: ${createdDesigns.length}`);
     
     process.exit(0);
   } catch (error) {

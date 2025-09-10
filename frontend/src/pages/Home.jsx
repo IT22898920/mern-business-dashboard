@@ -1,9 +1,34 @@
-import React from 'react';
-import { Star, ArrowRight, Mail, Phone } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, ArrowRight, Mail, Phone, Eye, Calendar, User, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { getAllDesigns } from '../services/designService';
+import { useAuth } from '../contexts/AuthContext';
 
 const InteriorDesignHomePage = () => {
+  const { isAuthenticated } = useAuth();
+  const [designs, setDesigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchDesigns = async () => {
+      try {
+        setLoading(true);
+        const designsData = await getAllDesigns();
+        setDesigns(designsData);
+      } catch (err) {
+        setError('Failed to load designs');
+        console.error('Error fetching designs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDesigns();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <Navbar />
@@ -127,6 +152,125 @@ const InteriorDesignHomePage = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* User Designs Gallery */}
+      <section id="designs" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-800 mb-4">
+              User Design Gallery
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+              Explore amazing interior designs created by our talented community of designers
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 text-lg">{error}</p>
+            </div>
+          ) : designs.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">No designs available yet. Be the first to share your design!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {designs.map((design) => (
+                <div 
+                  key={design._id} 
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                >
+                  {design.imageURL && (
+                    <Link to={`/design/${design._id}`} className="relative h-64 overflow-hidden block">
+                      <img 
+                        src={design.imageURL} 
+                        alt={design.projectName}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          design.status === 'Completed' 
+                            ? 'bg-green-100 text-green-800' 
+                            : design.status === 'Review'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {design.status}
+                        </span>
+                      </div>
+                    </Link>
+                  )}
+                  
+                  <div className="p-6">
+                    <Link to={`/design/${design._id}`}>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2 hover:text-purple-600 transition-colors duration-300">{design.projectName}</h3>
+                    </Link>
+                    <p className="text-gray-600 mb-4 line-clamp-3">{design.description}</p>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                      <div className="flex items-center space-x-1">
+                        <User className="h-4 w-4" />
+                        <span>{design.clientName}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>{new Date(design.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    
+                    <Link
+                      to={`/design/${design._id}`}
+                      className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-2 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View Details</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Login Prompt for Non-Authenticated Users */}
+          {!isAuthenticated && (
+            <div className="mt-12 text-center">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-purple-100 rounded-full p-3">
+                    <Lock className="h-8 w-8 text-purple-600" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  Want to Contact Designers?
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Register for free to contact designers, save your favorite designs, and get personalized recommendations.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    to="/register"
+                    className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Register Now</span>
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-xl font-semibold hover:bg-purple-50 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <Lock className="h-5 w-5" />
+                    <span>Login</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
