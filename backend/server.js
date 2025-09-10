@@ -81,6 +81,8 @@ import designRoutes from './routes/designRoutes.js'; // Interior Designs
 import clientContactRoutes from './routes/clientContactRoutes.js'; // Client Contacts
 import notificationRoutes from './routes/notificationRoutes.js'; // Notifications
 import reorderRoutes from './routes/reorders.js';
+import employeeRoutes from './routes/employeeRoutes.js';
+import leaveRoutes from './routes/leaveRoutes.js';
 
 
 // ------------------------
@@ -108,6 +110,8 @@ app.use('/api/client-contacts', clientContactRoutes);
 
 // Notifications routes
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/leaves', leaveRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
