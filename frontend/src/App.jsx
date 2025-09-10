@@ -107,7 +107,7 @@ function App() {
           element={<ProductDetail />}
         />
         
-        {/* Design Detail route - Public route */}
+        {/* Design Detail route - Protected route */}
         <Route
           path="/design/:id"
           element={<DesignDetail />}

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Star, ArrowRight, Mail, Phone, Eye, Calendar, User } from 'lucide-react';
+import { Star, ArrowRight, Mail, Phone, Eye, Calendar, User, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { getAllDesigns } from '../services/designService';
+import { useAuth } from '../contexts/AuthContext';
 
 const InteriorDesignHomePage = () => {
+  const { isAuthenticated } = useAuth();
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -232,6 +234,41 @@ const InteriorDesignHomePage = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Login Prompt for Non-Authenticated Users */}
+          {!isAuthenticated && (
+            <div className="mt-12 text-center">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-purple-100 rounded-full p-3">
+                    <Lock className="h-8 w-8 text-purple-600" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  Want to Contact Designers?
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Register for free to contact designers, save your favorite designs, and get personalized recommendations.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    to="/register"
+                    className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Register Now</span>
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-xl font-semibold hover:bg-purple-50 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <Lock className="h-5 w-5" />
+                    <span>Login</span>
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
         </div>

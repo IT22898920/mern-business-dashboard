@@ -12,8 +12,8 @@ const router = express.Router();
 
 // Routes with authentication
 router.post('/add', protect, addDesign);
-router.get('/all', optionalAuth, getAllDesigns); // Optional auth for public viewing
-router.get('/:id', optionalAuth, getDesignById);
+router.get('/all', optionalAuth, getAllDesigns); // Public viewing with optional auth
+router.get('/:id', optionalAuth, getDesignById); // Public viewing with optional auth
 router.put('/update/:id', protect, updateDesign);
 router.delete('/delete/:id', protect, deleteDesign);
 

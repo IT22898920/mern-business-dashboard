@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, Calendar, User, MapPin, MessageCircle, Star } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, User, MapPin, MessageCircle, Star, Lock } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { getDesignById } from '../services/designService';
 import { createClientContact } from '../services/clientContactService';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const DesignDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [design, setDesign] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,6 +48,15 @@ const DesignDetail = () => {
       ...contactForm,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleContactClick = () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to contact the designer');
+      navigate('/login');
+      return;
+    }
+    setShowContactForm(true);
   };
 
   const handleContactSubmit = async (e) => {
@@ -208,6 +219,9 @@ ${contactForm.name}`;
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
                 <MessageCircle className="h-5 w-5 text-purple-600" />
                 <span>Contact Designer</span>
+                {!isAuthenticated && (
+                  <span className="text-sm text-gray-500 font-normal">(Login Required)</span>
+                )}
               </h3>
               
               <div className="space-y-3 mb-6">
@@ -221,9 +235,41 @@ ${contactForm.name}`;
                 </div>
               </div>
 
-              {!showContactForm ? (
+              {!isAuthenticated ? (
+                <div className="text-center py-6">
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                    <div className="flex justify-center mb-4">
+                      <div className="bg-purple-100 rounded-full p-3">
+                        <Lock className="h-6 w-6 text-purple-600" />
+                      </div>
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                      Login Required to Contact Designer
+                    </h4>
+                    <p className="text-gray-600 mb-4">
+                      Please login or register to contact the designer and access all features.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <button
+                        onClick={() => navigate('/login')}
+                        className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-2 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                      >
+                        <Lock className="h-4 w-4" />
+                        <span>Login</span>
+                      </button>
+                      <button
+                        onClick={() => navigate('/register')}
+                        className="border-2 border-purple-600 text-purple-600 py-2 px-4 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-300 flex items-center justify-center space-x-2"
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Register</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : !showContactForm ? (
                 <button
-                  onClick={() => setShowContactForm(true)}
+                  onClick={handleContactClick}
                   className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
                 >
                   <MessageCircle className="h-5 w-5" />
@@ -323,6 +369,11 @@ ${contactForm.name}`;
                 
                 <button
                   onClick={() => {
+                    if (!isAuthenticated) {
+                      toast.error('Please login to copy contact information');
+                      navigate('/login');
+                      return;
+                    }
                     navigator.clipboard.writeText(design.contact);
                     toast.success('Email copied to clipboard!');
                   }}
