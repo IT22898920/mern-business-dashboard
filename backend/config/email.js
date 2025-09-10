@@ -15,7 +15,7 @@ const createTransporter = () => {
     }
   };
 
-  return nodemailer.createTransporter(config);
+  return nodemailer.createTransport(config);
 };
 
 // Email templates
@@ -177,20 +177,35 @@ const getEmailTemplate = (type, data) => {
 };
 
 // Send email function
-export const sendEmail = async (to, type, data) => {
+export const sendEmail = async (to, subject, html, data) => {
   try {
     const transporter = createTransporter();
-    const template = getEmailTemplate(type, data);
+    
+    // If subject is a template type (for backward compatibility)
+    if (typeof subject === 'string' && !html && data) {
+      const template = getEmailTemplate(subject, data);
+      if (!template) {
+        throw new Error(`Email template '${subject}' not found`);
+      }
+      
+      const mailOptions = {
+        from: `"MERN Business Dashboard" <${process.env.EMAIL_FROM}>`,
+        to: to,
+        subject: template.subject,
+        html: template.html
+      };
 
-    if (!template) {
-      throw new Error(`Email template '${type}' not found`);
+      const result = await transporter.sendMail(mailOptions);
+      console.log('✅ Email sent successfully:', result.messageId);
+      return result;
     }
-
+    
+    // Direct email sending with subject and html
     const mailOptions = {
       from: `"MERN Business Dashboard" <${process.env.EMAIL_FROM}>`,
       to: to,
-      subject: template.subject,
-      html: template.html
+      subject: subject,
+      html: html
     };
 
     const result = await transporter.sendMail(mailOptions);
@@ -205,7 +220,7 @@ export const sendEmail = async (to, type, data) => {
 
 // Send password reset email
 export const sendPasswordResetEmail = async (user, resetToken) => {
-  return sendEmail(user.email, 'passwordReset', {
+  return sendEmail(user.email, 'passwordReset', null, {
     name: user.name,
     token: resetToken
   });
@@ -213,7 +228,7 @@ export const sendPasswordResetEmail = async (user, resetToken) => {
 
 // Send email verification email
 export const sendEmailVerificationEmail = async (user, verificationToken) => {
-  return sendEmail(user.email, 'emailVerification', {
+  return sendEmail(user.email, 'emailVerification', null, {
     name: user.name,
     token: verificationToken
   });
@@ -221,7 +236,7 @@ export const sendEmailVerificationEmail = async (user, verificationToken) => {
 
 // Send welcome email
 export const sendWelcomeEmail = async (user) => {
-  return sendEmail(user.email, 'welcome', {
+  return sendEmail(user.email, 'welcome', null, {
     name: user.name
   });
 };

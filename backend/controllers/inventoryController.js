@@ -1,6 +1,7 @@
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
+import { sendEmail } from '../config/email.js';
 
 // Get all products with inventory info
 export const getInventoryOverview = asyncHandler(async (req, res) => {
@@ -183,9 +184,18 @@ export const assignSupplier = asyncHandler(async (req, res) => {
 
   await product.populate('supplier', 'name email role');
 
+  // Send email notification to supplier
+  try {
+    await sendSupplierAssignmentEmail(supplier, product, req.user);
+    console.log(`✅ Supplier assignment email sent to: ${supplier.email}`);
+  } catch (emailError) {
+    console.error('❌ Failed to send supplier assignment email:', emailError);
+    // Don't fail the request if email fails
+  }
+
   res.json({
     status: 'success',
-    message: 'Supplier assigned successfully',
+    message: 'Supplier assigned successfully and notification sent',
     data: {
       product: {
         _id: product._id,
@@ -326,3 +336,56 @@ export const bulkStockAdjustment = asyncHandler(async (req, res) => {
     }
   });
 });
+
+// Email notification function for supplier assignment
+const sendSupplierAssignmentEmail = async (supplier, product, admin) => {
+  const subject = `Product Assignment - ${product.name}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #2563eb;">Product Assignment Notification</h2>
+      
+      <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="margin: 0 0 15px 0; color: #374151;">You have been assigned to supply a product</h3>
+        <p><strong>Product Name:</strong> ${product.name}</p>
+        <p><strong>SKU:</strong> ${product.sku}</p>
+        <p><strong>Category:</strong> ${product.category}</p>
+        ${product.supplier_info?.lead_time ? `<p><strong>Expected Lead Time:</strong> ${product.supplier_info.lead_time} days</p>` : ''}
+        ${product.supplier_info?.minimum_order_quantity ? `<p><strong>Minimum Order Quantity:</strong> ${product.supplier_info.minimum_order_quantity} units</p>` : ''}
+      </div>
+
+      <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h4 style="margin: 0 0 10px 0; color: #92400e;">Current Stock Status</h4>
+        <p><strong>Available Stock:</strong> ${product.stock?.available || 0} units</p>
+        <p><strong>Low Stock Threshold:</strong> ${product.stock?.low_stock_threshold || 0} units</p>
+        ${product.stock?.available <= product.stock?.low_stock_threshold ? 
+          '<p style="color: #dc2626; font-weight: bold;">⚠️ This product is currently low on stock and may need reordering soon!</p>' 
+          : ''}
+      </div>
+
+      <div style="background-color: #ecfdf5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h4 style="margin: 0 0 10px 0; color: #065f46;">What's Next?</h4>
+        <ul style="margin: 0; padding-left: 20px;">
+          <li>You will receive reorder requests for this product when stock is low</li>
+          <li>Log in to your supplier dashboard to view all assigned products</li>
+          <li>Keep track of your inventory levels and delivery capabilities</li>
+          <li>Respond promptly to reorder requests from the admin team</li>
+        </ul>
+      </div>
+
+      <div style="margin: 30px 0;">
+        <a href="${process.env.FRONTEND_URL}/supplier/dashboard" 
+           style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+          View Supplier Dashboard
+        </a>
+      </div>
+
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; color: #6b7280; font-size: 14px;">
+        <p><strong>Assigned by:</strong> ${admin.name} (${admin.email})</p>
+        <p><strong>Date:</strong> ${new Date().toDateString()}</p>
+        <p>If you have any questions about this assignment, please contact the admin team.</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail(supplier.email, subject, html);
+};

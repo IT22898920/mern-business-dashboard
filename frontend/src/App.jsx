@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 
 // Context Providers
 import { AuthProvider } from './contexts/AuthContext';
+import { AlertProvider } from './components/AlertSystem';
 
 // Route Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -21,7 +22,7 @@ import ProductsManagement from './pages/admin/ProductsManagement';
 import CategoryManagement from './pages/admin/CategoryManagement';
 import InventoryManagement from './pages/admin/InventoryManagement';
 import StaffDashboard from './pages/dashboards/StaffDashboard';
-import SupplierDashboard from './pages/dashboards/SupplierDashboard';
+import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import DesignerDashboard from './pages/dashboards/DesignerDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProductsCatalog from './pages/ProductsCatalog';
@@ -29,6 +30,8 @@ import ProductDetail from './pages/ProductDetail';
 import DesignDetail from './pages/DesignDetail';
 import SupplierApplication from './pages/SupplierApplication';
 import SupplierApplicationsManagement from './pages/admin/SupplierApplicationsManagement';
+import ReorderResponses from './pages/admin/ReorderResponses';
+import AllSuppliers from './pages/admin/AllSuppliers';
 
 // 404 Page Component
 const NotFound = () => (
@@ -53,7 +56,8 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="App">
+        <AlertProvider>
+          <div className="App">
           <Routes>
             {/* Public Routes */}
             <Route 
@@ -163,6 +167,22 @@ function App() {
               element={
                 <ProtectedRoute roles={['admin']}>
                   <SupplierApplicationsManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/reorder-responses" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <ReorderResponses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/suppliers" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AllSuppliers />
                 </ProtectedRoute>
               } 
             />
@@ -301,7 +321,8 @@ function App() {
               },
             }}
           />
-        </div>
+          </div>
+        </AlertProvider>
       </AuthProvider>
     </Router>
   );
