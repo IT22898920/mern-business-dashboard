@@ -67,25 +67,34 @@ export const protect = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    console.error('Auth middleware error:', error.message);
     
-    if (error.name === 'JsonWebTokenError') {
+    // Handle specific error messages from verifyToken
+    if (error.message === 'Token has expired') {
       return res.status(401).json({
         status: 'error',
-        message: 'Invalid token.'
+        message: 'Token has expired. Please login again.'
       });
     }
     
-    if (error.name === 'TokenExpiredError') {
+    if (error.message === 'Invalid token format') {
       return res.status(401).json({
         status: 'error',
-        message: 'Token has expired.'
+        message: 'Invalid token format. Please login again.'
+      });
+    }
+    
+    if (error.message === 'No token provided') {
+      return res.status(401).json({
+        status: 'error',
+        message: 'No authentication token provided.'
       });
     }
 
+    // Generic authentication error
     return res.status(401).json({
       status: 'error',
-      message: 'Authentication failed.'
+      message: error.message || 'Authentication failed. Please login again.'
     });
   }
 };

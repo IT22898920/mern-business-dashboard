@@ -42,9 +42,11 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       
-      // Only show toast if not already on auth pages
+      // Only show toast if not already on auth pages and not during initial load
       if (!window.location.pathname.includes('/login') && 
-          !window.location.pathname.includes('/register')) {
+          !window.location.pathname.includes('/register') &&
+          !window.location.pathname.includes('/admin/dashboard') &&
+          localStorage.getItem('skipSessionExpiredToast') !== 'true') {
         toast.error('Session expired. Please login again.');
         window.location.href = '/login';
       }

@@ -14,24 +14,45 @@ export const generateToken = (payload) => {
 
 // Verify JWT token
 export const verifyToken = (token) => {
-  try {
-    // First try with issuer/audience validation
-    return jwt.verify(token, JWT_SECRET, {
+  if (!token) {
+    throw new Error('No token provided');
+  }
+
+  // Try different verification strategies
+  const verificationStrategies = [
+    // Current configuration with issuer/audience
+    () => jwt.verify(token, JWT_SECRET, {
       issuer: 'mern-business-dashboard',
       audience: 'mern-business-dashboard-users'
-    });
-  } catch (error) {
-    // If that fails, try without issuer/audience for backward compatibility
+    }),
+    // Without issuer/audience for backward compatibility
+    () => jwt.verify(token, JWT_SECRET),
+    // Legacy demo secret
+    () => jwt.verify(token, 'demo_secret_key'),
+    // Fallback secret from env
+    () => jwt.verify(token, 'fallback_secret_key')
+  ];
+
+  let lastError = null;
+  
+  for (const strategy of verificationStrategies) {
     try {
-      return jwt.verify(token, JWT_SECRET);
-    } catch (fallbackError) {
-      // Also try with the old demo secret for backward compatibility
-      try {
-        return jwt.verify(token, 'demo_secret_key');
-      } catch (demoError) {
-        throw new Error('Invalid or expired token');
-      }
+      const decoded = strategy();
+      // Successfully decoded, return the result
+      return decoded;
+    } catch (error) {
+      lastError = error;
+      // Continue to next strategy
     }
+  }
+
+  // All strategies failed
+  if (lastError?.name === 'TokenExpiredError') {
+    throw new Error('Token has expired');
+  } else if (lastError?.name === 'JsonWebTokenError') {
+    throw new Error('Invalid token format');
+  } else {
+    throw new Error('Token verification failed');
   }
 };
 
@@ -103,4 +124,24 @@ export const generateEmailVerificationToken = (userId, email) => {
       audience: 'mern-business-dashboard-users'
     }
   );
+};
+
+// Decode token without verification (for debugging)
+export const decodeToken = (token) => {
+  try {
+    return jwt.decode(token);
+  } catch (error) {
+    return null;
+  }
+};
+
+// Check if token is expired
+export const isTokenExpired = (token) => {
+  try {
+    const decoded = jwt.decode(token);
+    if (!decoded || !decoded.exp) return true;
+    return decoded.exp * 1000 < Date.now();
+  } catch (error) {
+    return true;
+  }
 };
