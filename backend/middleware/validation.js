@@ -120,6 +120,73 @@ export const validateUpdateProfile = [
     .matches(/^[a-zA-Z\s]+$/)
     .withMessage('Name can only contain letters and spaces'),
     
+  body('phone')
+    .optional()
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
+    .withMessage('Please provide a valid phone number'),
+    
+  // Supplier-specific validation
+  body('companyName')
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage('Company name cannot exceed 100 characters'),
+    
+  body('contactPersonTitle')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Contact person title cannot exceed 50 characters'),
+    
+  body('website')
+    .optional()
+    .trim()
+    .isURL()
+    .withMessage('Please provide a valid website URL'),
+    
+  body('businessLicense')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Business license cannot exceed 50 characters'),
+    
+  body('taxId')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Tax ID cannot exceed 50 characters'),
+    
+  body('establishedYear')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage('Please provide a valid establishment year'),
+    
+  body('employeeCount')
+    .optional()
+    .isIn(['1-10', '11-50', '50-100', '100-500', '500+'])
+    .withMessage('Please select a valid employee count range'),
+    
+  body('description')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Description cannot exceed 1000 characters'),
+    
+  body('specialties')
+    .optional()
+    .isArray()
+    .withMessage('Specialties must be an array'),
+    
+  body('services')
+    .optional()
+    .isArray()
+    .withMessage('Services must be an array'),
+    
+  body('certifications')
+    .optional()
+    .isArray()
+    .withMessage('Certifications must be an array'),
+    
   body('avatar')
     .optional()
     .custom((value) => {

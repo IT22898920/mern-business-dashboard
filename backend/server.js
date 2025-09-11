@@ -81,6 +81,7 @@ import designRoutes from './routes/designRoutes.js'; // Interior Designs
 import clientContactRoutes from './routes/clientContactRoutes.js'; // Client Contacts
 import notificationRoutes from './routes/notificationRoutes.js'; // Notifications
 import reorderRoutes from './routes/reorders.js';
+import reportRoutes from './routes/reportRoutes.js'; // PDF Reports
 
 
 // ------------------------
@@ -108,6 +109,9 @@ app.use('/api/client-contacts', clientContactRoutes);
 
 // Notifications routes
 app.use('/api/notifications', notificationRoutes);
+
+// Reports routes
+app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

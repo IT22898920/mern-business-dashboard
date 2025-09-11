@@ -15,7 +15,8 @@ import {
   getLowStockProducts,
   getOutOfStockProducts,
   bulkUpdateProducts,
-  duplicateProduct
+  duplicateProduct,
+  getSupplierProducts
 } from '../controllers/productController.js';
 import { protect } from '../middleware/auth.js';
 import { authorize } from '../middleware/roleAuth.js';
@@ -39,6 +40,9 @@ router.get('/stats', protect, authorize(['admin', 'employee']), getProductStats)
 router.get('/inventory-stats', protect, authorize(['admin', 'employee']), getInventoryStats);
 router.get('/low-stock', protect, authorize(['admin', 'employee']), getLowStockProducts);
 router.get('/out-of-stock', protect, authorize(['admin', 'employee']), getOutOfStockProducts);
+
+// Supplier specific route - get products assigned to logged-in supplier
+router.get('/supplier/my-products', protect, authorize(['supplier']), getSupplierProducts);
 
 // Parameterized routes come AFTER specific routes
 router.get('/:id', protect, getProduct);

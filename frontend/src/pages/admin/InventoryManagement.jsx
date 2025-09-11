@@ -14,7 +14,10 @@ import {
   Eye,
   History,
   ShoppingCart,
-  Clock
+  Clock,
+  FileText,
+  Download,
+  Calendar
 } from 'lucide-react';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +36,8 @@ const InventoryManagement = () => {
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [showReorderModal, setShowReorderModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportGenerating, setReportGenerating] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [adjustmentData, setAdjustmentData] = useState({
     type: 'restock',
@@ -50,6 +55,16 @@ const InventoryManagement = () => {
     urgency: 'medium',
     message: '',
     expectedDeliveryDate: ''
+  });
+  const [reportData, setReportData] = useState({
+    type: 'inventory_summary',
+    format: 'pdf',
+    dateRange: 'last_30_days',
+    customStartDate: '',
+    customEndDate: '',
+    includeOutOfStock: true,
+    includeLowStock: true,
+    includeSupplierInfo: true
   });
 
   useEffect(() => {
@@ -247,6 +262,59 @@ const InventoryManagement = () => {
     }
   };
 
+  const handleGenerateReport = async (e) => {
+    e.preventDefault();
+    setReportGenerating(true);
+    
+    try {
+      // Prepare query parameters
+      const params = new URLSearchParams({
+        type: reportData.type,
+        format: reportData.format,
+        dateRange: reportData.dateRange,
+        includeOutOfStock: reportData.includeOutOfStock,
+        includeLowStock: reportData.includeLowStock,
+        includeSupplierInfo: reportData.includeSupplierInfo
+      });
+
+      if (reportData.dateRange === 'custom') {
+        params.append('startDate', reportData.customStartDate);
+        params.append('endDate', reportData.customEndDate);
+      }
+
+      const response = await fetch(`/api/inventory/reports/generate?${params}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        // Handle file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `inventory_report_${new Date().toISOString().split('T')[0]}.${reportData.format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        setShowReportModal(false);
+        alert('Report generated successfully! 🎉');
+      } else {
+        const error = await response.json();
+        alert(`Error generating report: ${error.message}`);
+      }
+    } catch (error) {
+      alert('Error generating report');
+      console.error('Error:', error);
+    } finally {
+      setReportGenerating(false);
+    }
+  };
+
   const getStockStatus = (product) => {
     if (!product.stock.track_inventory) return 'Not Tracked';
     if (product.stock.available <= 0) return 'Out of Stock';
@@ -389,6 +457,15 @@ const InventoryManagement = () => {
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
+              </button>
+              
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-md hover:from-green-700 hover:to-emerald-700 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Generate Report</span>
+                <span className="sm:hidden">Report</span>
               </button>
             </div>
           </div>
@@ -825,6 +902,275 @@ const InventoryManagement = () => {
                     <ShoppingCart className="h-4 w-4" />
                     Send Reorder Request
                   </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Generation Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+          <div className="relative mx-auto w-full max-w-4xl bg-white rounded-2xl shadow-2xl transform transition-all duration-300 scale-100 animate-in">
+            {/* Header with gradient background */}
+            <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 rounded-t-2xl p-6 text-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">Generate Inventory Report</h3>
+                    <p className="text-green-100 mt-1">Create detailed reports for your inventory data</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-all duration-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {/* Decorative elements */}
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
+              <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-white/5 rounded-full"></div>
+            </div>
+            
+            <div className="p-8">
+              
+              <form onSubmit={handleGenerateReport}>
+                {/* Report Type Cards */}
+                <div className="mb-8">
+                  <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Select Report Type *
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      { value: 'inventory_summary', label: 'Inventory Summary', desc: 'Complete overview of all inventory items', icon: '📊' },
+                      { value: 'low_stock', label: 'Low Stock Report', desc: 'Items running low on stock', icon: '⚠️' },
+                      { value: 'out_of_stock', label: 'Out of Stock Report', desc: 'Items completely out of stock', icon: '❌' },
+                      { value: 'stock_valuation', label: 'Stock Valuation', desc: 'Total value of inventory', icon: '💰' },
+                      { value: 'supplier_analysis', label: 'Supplier Analysis', desc: 'Supplier performance overview', icon: '🏢' },
+                      { value: 'stock_movement', label: 'Stock Movement', desc: 'Stock history and movements', icon: '📈' }
+                    ].map((option) => (
+                      <div
+                        key={option.value}
+                        onClick={() => setReportData({...reportData, type: option.value})}
+                        className={`p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                          reportData.type === option.value
+                            ? 'border-green-500 bg-green-50 shadow-md'
+                            : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="text-2xl mb-2">{option.icon}</div>
+                        <h4 className="font-semibold text-gray-900 mb-1">{option.label}</h4>
+                        <p className="text-xs text-gray-600">{option.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Format */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Export Format *
+                    </label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'pdf', label: 'PDF Document', desc: 'Professional printable format', icon: '📄' },
+                        { value: 'excel', label: 'Excel Spreadsheet', desc: 'Editable .xlsx format', icon: '📊' },
+                        { value: 'csv', label: 'CSV File', desc: 'Data import/export format', icon: '📋' }
+                      ].map((format) => (
+                        <div
+                          key={format.value}
+                          onClick={() => setReportData({...reportData, format: format.value})}
+                          className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-3 ${
+                            reportData.format === format.value
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className="text-lg">{format.icon}</span>
+                          <div>
+                            <div className="font-medium text-gray-900">{format.label}</div>
+                            <div className="text-xs text-gray-600">{format.desc}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Date Range */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Date Range *
+                    </label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'today', label: 'Today', icon: '📅' },
+                        { value: 'last_7_days', label: 'Last 7 Days', icon: '📆' },
+                        { value: 'last_30_days', label: 'Last 30 Days', icon: '🗓️' },
+                        { value: 'last_90_days', label: 'Last 90 Days', icon: '🗓️' },
+                        { value: 'last_year', label: 'Last Year', icon: '📊' },
+                        { value: 'custom', label: 'Custom Range', icon: '🔧' }
+                      ].map((range) => (
+                        <div
+                          key={range.value}
+                          onClick={() => setReportData({...reportData, dateRange: range.value})}
+                          className={`p-3 border rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-3 ${
+                            reportData.dateRange === range.value
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className="text-lg">{range.icon}</span>
+                          <div className="font-medium text-gray-900">{range.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Date Range */}
+                {reportData.dateRange === 'custom' && (
+                  <div className="mt-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Custom Date Range
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-blue-800 mb-2">
+                          Start Date *
+                        </label>
+                        <input
+                          type="date"
+                          value={reportData.customStartDate}
+                          onChange={(e) => setReportData({...reportData, customStartDate: e.target.value})}
+                          className="w-full border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          required={reportData.dateRange === 'custom'}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-blue-800 mb-2">
+                          End Date *
+                        </label>
+                        <input
+                          type="date"
+                          value={reportData.customEndDate}
+                          onChange={(e) => setReportData({...reportData, customEndDate: e.target.value})}
+                          className="w-full border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          required={reportData.dateRange === 'custom'}
+                          min={reportData.customStartDate}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Report Options */}
+                <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Report Options
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { id: 'includeOutOfStock', label: 'Out of Stock Items', desc: 'Include items with zero stock', icon: '❌' },
+                      { id: 'includeLowStock', label: 'Low Stock Items', desc: 'Include items below threshold', icon: '⚠️' },
+                      { id: 'includeSupplierInfo', label: 'Supplier Information', desc: 'Include supplier details', icon: '🏢' }
+                    ].map((option) => (
+                      <div key={option.id} className="relative">
+                        <input
+                          type="checkbox"
+                          id={option.id}
+                          checked={reportData[option.id]}
+                          onChange={(e) => setReportData({...reportData, [option.id]: e.target.checked})}
+                          className="sr-only"
+                        />
+                        <label
+                          htmlFor={option.id}
+                          className={`block p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                            reportData[option.id]
+                              ? 'border-green-500 bg-green-50 shadow-md'
+                              : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="text-lg">{option.icon}</span>
+                            <div>
+                              <div className="font-medium text-gray-900">{option.label}</div>
+                              <div className="text-xs text-gray-600 mt-1">{option.desc}</div>
+                            </div>
+                            {reportData[option.id] && (
+                              <div className="ml-auto">
+                                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-10 flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200">
+                  <div className="text-sm text-gray-600 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Report will be downloaded automatically when generated
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowReportModal(false)}
+                      className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center gap-2 font-medium"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={reportGenerating}
+                      className={`px-8 py-3 rounded-xl flex items-center gap-3 font-semibold shadow-lg transition-all duration-200 ${
+                        reportGenerating 
+                          ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 hover:shadow-xl transform hover:scale-105'
+                      } text-white`}
+                    >
+                      {reportGenerating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                          <span>Generating Report...</span>
+                          <div className="w-4 h-4"></div>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-5 w-5" />
+                          <span>Generate & Download Report</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>

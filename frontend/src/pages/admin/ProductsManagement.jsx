@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
+import inventoryService from '../../services/inventoryService';
 import AddProductModal from '../../components/admin/AddProductModal';
 import EditProductModal from '../../components/admin/EditProductModal';
 
@@ -32,6 +33,16 @@ const ProductsManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportOptions, setReportOptions] = useState({
+    type: 'inventory_summary',
+    format: 'pdf',
+    dateRange: 'last_30_days',
+    includeSupplierInfo: true,
+    includeOutOfStock: true,
+    includeLowStock: true
+  });
 
   // Load initial data
   useEffect(() => {
@@ -171,6 +182,39 @@ const ProductsManagement = () => {
     }
   };
 
+  // Generate beautiful inventory report
+  const handleGenerateReport = async () => {
+    setGeneratingReport(true);
+    try {
+      const reportTypeNames = {
+        'inventory_summary': 'Inventory Summary',
+        'low_stock': 'Low Stock',
+        'out_of_stock': 'Out of Stock',
+        'stock_valuation': 'Stock Valuation',
+        'supplier_analysis': 'Supplier Analysis'
+      };
+      
+      toast.success(`Generating ${reportTypeNames[reportOptions.type]} report...`, { duration: 2000 });
+      
+      await inventoryService.generateReport({
+        type: reportOptions.type,
+        format: reportOptions.format,
+        dateRange: reportOptions.dateRange,
+        includeSupplierInfo: reportOptions.includeSupplierInfo.toString(),
+        includeOutOfStock: reportOptions.includeOutOfStock.toString(),
+        includeLowStock: reportOptions.includeLowStock.toString()
+      });
+      
+      toast.success('Beautiful professional report downloaded successfully! 🎉');
+      setShowReportModal(false);
+    } catch (error) {
+      toast.error('Failed to generate report');
+      console.error('Report generation error:', error);
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
   // Format price
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
@@ -221,6 +265,14 @@ const ProductsManagement = () => {
                 >
                   <RefreshCw className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   Refresh
+                </button>
+                
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl text-sm font-medium hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                >
+                  <BarChart3 className="w-5 h-5 mr-2" />
+                  Generate Report
                 </button>
                 
                 <button
@@ -1231,6 +1283,152 @@ const ProductsManagement = () => {
                 >
                   Delete Product
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Professional Report Generation Modal */}
+        {showReportModal && (
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex items-center justify-center min-h-screen px-4">
+              <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowReportModal(false)}></div>
+              
+              <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 transform transition-all">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl">
+                      <BarChart3 className="w-8 h-8 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Generate Professional Report</h3>
+                      <p className="text-gray-600">Create beautiful inventory reports for your business</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowReportModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    <XCircle className="w-6 h-6 text-gray-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-8">
+                  {/* Report Type Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-4">
+                      <BarChart3 className="w-4 h-4 inline mr-2" />
+                      Report Type
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {[
+                        { value: 'inventory_summary', label: 'Inventory Summary', desc: 'Complete overview of all products' },
+                        { value: 'low_stock', label: 'Low Stock Alert', desc: 'Products needing attention' },
+                        { value: 'out_of_stock', label: 'Out of Stock', desc: 'Products currently unavailable' },
+                        { value: 'stock_valuation', label: 'Stock Valuation', desc: 'Financial value analysis' }
+                      ].map(option => (
+                        <label key={option.value} className="cursor-pointer">
+                          <input
+                            type="radio"
+                            name="reportType"
+                            value={option.value}
+                            checked={reportOptions.type === option.value}
+                            onChange={(e) => setReportOptions(prev => ({...prev, type: e.target.value}))}
+                            className="sr-only"
+                          />
+                          <div className={`p-4 rounded-xl border-2 transition-all ${
+                            reportOptions.type === option.value
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
+                          }`}>
+                            <div className="font-medium text-gray-900">{option.label}</div>
+                            <div className="text-sm text-gray-600 mt-1">{option.desc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Date Range Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-4">
+                      <Clock className="w-4 h-4 inline mr-2" />
+                      Time Period
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { value: 'last_7_days', label: 'Last 7 Days' },
+                        { value: 'last_30_days', label: 'Last 30 Days' },
+                        { value: 'last_90_days', label: 'Last 3 Months' },
+                        { value: 'last_year', label: 'Last Year' }
+                      ].map(option => (
+                        <label key={option.value} className="cursor-pointer">
+                          <input
+                            type="radio"
+                            name="dateRange"
+                            value={option.value}
+                            checked={reportOptions.dateRange === option.value}
+                            onChange={(e) => setReportOptions(prev => ({...prev, dateRange: e.target.value}))}
+                            className="sr-only"
+                          />
+                          <div className={`p-3 rounded-lg border-2 text-center transition-all ${
+                            reportOptions.dateRange === option.value
+                              ? 'border-green-500 bg-green-50 text-green-700'
+                              : 'border-gray-200 hover:border-green-300'
+                          }`}>
+                            <div className="text-sm font-medium">{option.label}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Advanced Options */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-4">
+                      <Tag className="w-4 h-4 inline mr-2" />
+                      Include Options
+                    </label>
+                    <div className="space-y-3">
+                      {[
+                        { key: 'includeSupplierInfo', label: 'Supplier Information', desc: 'Include supplier details and contact info' },
+                        { key: 'includeOutOfStock', label: 'Out of Stock Items', desc: 'Show products that are out of stock' },
+                        { key: 'includeLowStock', label: 'Low Stock Items', desc: 'Include products below threshold' }
+                      ].map(option => (
+                        <label key={option.key} className="flex items-start space-x-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={reportOptions[option.key]}
+                            onChange={(e) => setReportOptions(prev => ({...prev, [option.key]: e.target.checked}))}
+                            className="mt-1 w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                          />
+                          <div>
+                            <div className="font-medium text-gray-900">{option.label}</div>
+                            <div className="text-sm text-gray-600">{option.desc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-4 mt-8 pt-6 border-t">
+                  <button
+                    onClick={() => setShowReportModal(false)}
+                    className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGenerateReport}
+                    disabled={generatingReport}
+                    className="px-8 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    <Download className={`w-5 h-5 mr-2 inline ${generatingReport ? 'animate-bounce' : ''}`} />
+                    {generatingReport ? 'Generating...' : 'Generate Professional Report'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

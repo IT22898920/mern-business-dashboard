@@ -919,7 +919,12 @@ export const getProductStats = async (req, res) => {
       Product.countDocuments({ status: 'active' }),
       Product.countDocuments({
         'stock.track_inventory': true,
-        $expr: { $lte: ['$stock.available', '$stock.low_stock_threshold'] }
+        $expr: { 
+          $and: [
+            { $lte: ['$stock.available', '$stock.low_stock_threshold'] },
+            { $gt: ['$stock.available', 0] }
+          ]
+        }
       }),
       Product.countDocuments({
         'stock.track_inventory': true,
@@ -1533,6 +1538,143 @@ export const getStockMovementStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch stock movement statistics',
+      error: error.message
+    });
+  }
+};
+
+// Get products assigned to supplier
+export const getSupplierProducts = async (req, res) => {
+  try {
+    const supplierId = req.user.id; // Get supplier ID from authenticated user
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    // If MongoDB is not connected, return demo products
+    if (!isMongoConnected()) {
+      console.log('🔍 Using demo products for supplier (database not connected)');
+      
+      // Filter demo products for supplier
+      let filteredProducts = demoProducts.filter(p => p.supplier === supplierId);
+      
+      // Apply filters
+      if (status && status !== 'all') {
+        filteredProducts = filteredProducts.filter(p => p.status === status);
+      }
+      
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredProducts = filteredProducts.filter(p =>
+          p.name.toLowerCase().includes(searchLower) ||
+          p.sku.toLowerCase().includes(searchLower) ||
+          p.short_description.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Apply pagination
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + parseInt(limit);
+      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+      
+      return res.json({
+        status: 'success',
+        data: {
+          products: paginatedProducts,
+          pagination: {
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(filteredProducts.length / limit),
+            totalProducts: filteredProducts.length,
+            limit: parseInt(limit)
+          },
+          stats: {
+            totalProducts: filteredProducts.length,
+            activeProducts: filteredProducts.filter(p => p.status === 'active').length,
+            lowStockProducts: filteredProducts.filter(p => p.stock.current <= p.stock.low_stock_threshold).length,
+            outOfStockProducts: filteredProducts.filter(p => p.stock.current === 0).length
+          }
+        },
+        source: 'demo'
+      });
+    }
+
+    // Build query for database
+    const query = { supplier: supplierId };
+
+    // Apply filters
+    if (search) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      query.$or = [
+        { name: { $regex: searchRegex } },
+        { sku: { $regex: searchRegex } },
+        { short_description: { $regex: searchRegex } }
+      ];
+    }
+
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Execute query with pagination
+    const skip = (Number(page) - 1) * Number(limit);
+    
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate('category', 'name slug')
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit)),
+      Product.countDocuments(query)
+    ]);
+
+    // Get statistics
+    const [activeProducts, lowStockProducts, outOfStockProducts] = await Promise.all([
+      Product.countDocuments({ ...query, status: 'active' }),
+      Product.countDocuments({
+        ...query,
+        'stock.track_inventory': true,
+        $expr: { $lte: ['$stock.available', '$stock.low_stock_threshold'] }
+      }),
+      Product.countDocuments({
+        ...query,
+        'stock.track_inventory': true,
+        'stock.available': { $lte: 0 }
+      })
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        products,
+        pagination: {
+          currentPage: Number(page),
+          totalPages: Math.ceil(total / Number(limit)),
+          totalProducts: total,
+          hasNextPage: skip + Number(limit) < total,
+          hasPrevPage: Number(page) > 1
+        },
+        stats: {
+          totalProducts: total,
+          activeProducts,
+          lowStockProducts,
+          outOfStockProducts
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get supplier products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch supplier products',
       error: error.message
     });
   }

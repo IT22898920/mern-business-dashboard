@@ -243,16 +243,69 @@ export const getMe = asyncHandler(async (req, res) => {
 
 // Update user profile
 export const updateProfile = asyncHandler(async (req, res) => {
-  const { name, avatar } = req.body;
   const user = req.user;
+  const updateFields = req.body;
 
-  // Update name if provided
-  if (name && name.trim()) {
-    user.name = name.trim();
+  // Basic fields that all users can update
+  const allowedFields = ['name', 'phone', 'avatar'];
+  
+  // Additional fields for suppliers
+  const supplierFields = [
+    'companyName', 'contactPersonTitle', 'website', 'address',
+    'businessLicense', 'taxId', 'establishedYear', 'employeeCount',
+    'description', 'specialties', 'services', 'certifications', 'businessHours'
+  ];
+
+  // If user is a supplier, add supplier fields to allowed fields
+  if (user.role === 'supplier') {
+    allowedFields.push(...supplierFields);
+  }
+
+  // Update basic fields
+  for (const field of allowedFields) {
+    if (updateFields[field] !== undefined) {
+      if (field === 'name' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'phone' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'companyName' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'contactPersonTitle' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'website' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'businessLicense' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'taxId' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'description' && updateFields[field]) {
+        user[field] = updateFields[field].trim();
+      } else if (field === 'establishedYear' && updateFields[field]) {
+        user[field] = parseInt(updateFields[field]);
+      } else if (field === 'employeeCount' && updateFields[field]) {
+        user[field] = updateFields[field];
+      } else if (field === 'address' && updateFields[field]) {
+        user[field] = {
+          street: updateFields[field].street || '',
+          city: updateFields[field].city || '',
+          state: updateFields[field].state || '',
+          zipCode: updateFields[field].zipCode || '',
+          country: updateFields[field].country || ''
+        };
+      } else if (field === 'specialties' && Array.isArray(updateFields[field])) {
+        user[field] = updateFields[field].filter(item => item && item.trim()).map(item => item.trim());
+      } else if (field === 'services' && Array.isArray(updateFields[field])) {
+        user[field] = updateFields[field].filter(item => item && item.trim()).map(item => item.trim());
+      } else if (field === 'certifications' && Array.isArray(updateFields[field])) {
+        user[field] = updateFields[field].filter(item => item && item.trim()).map(item => item.trim());
+      } else if (field === 'businessHours' && updateFields[field]) {
+        user[field] = updateFields[field];
+      }
+    }
   }
 
   // Handle avatar update
-  if (avatar && avatar.startsWith('data:image')) {
+  if (updateFields.avatar && updateFields.avatar.startsWith('data:image')) {
     try {
       // Delete old avatar from Cloudinary if exists
       if (user.avatar.public_id) {
@@ -260,7 +313,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
       }
 
       // Upload new avatar
-      const uploadResult = await uploadBase64ToCloudinary(avatar, 'mern-business-dashboard/avatars');
+      const uploadResult = await uploadBase64ToCloudinary(updateFields.avatar, 'mern-business-dashboard/avatars');
       user.avatar = uploadResult;
     } catch (error) {
       console.error('Avatar update error:', error);
