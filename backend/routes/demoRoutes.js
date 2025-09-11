@@ -1,17 +1,17 @@
 import express from 'express';
 import {
+  demoLogin,
   demoGetCategories,
   demoGetCategoryStats,
   demoCreateCategory,
   demoUpdateCategory,
   demoDeleteCategory
 } from '../controllers/demoAuthController.js';
-import { hybridLogin } from '../controllers/hybridAuthController.js';
 
 const router = express.Router();
 
-// Hybrid Auth Routes (tries database first, then demo)
-router.post('/auth/login', hybridLogin);
+// Demo Auth Routes (demo users only)
+router.post('/auth/login', demoLogin);
 
 // Demo Categories Routes  
 router.get('/categories', demoGetCategories);

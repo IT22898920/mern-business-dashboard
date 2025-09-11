@@ -5,6 +5,7 @@ import {
   Calendar, Filter, Download, RefreshCw, Zap, Target, Star, Clock, UserCheck, Link, X
 } from 'lucide-react';
 import { productService } from '../../services/productService';
+import { createEmployee } from '../../services/employeeService';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { useApplicationStats } from '../../hooks/useApplicationStats';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,9 @@ const AdminDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   const navigate = useNavigate();
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [employeeForm, setEmployeeForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [submittingEmployee, setSubmittingEmployee] = useState(false);
   const { stats: applicationStats } = useApplicationStats();
 
   useEffect(() => {
@@ -46,6 +50,20 @@ const AdminDashboard = () => {
     setRefreshing(true);
     await fetchProducts();
     setTimeout(() => setRefreshing(false), 500);
+  };
+
+  const handleCreateEmployee = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmittingEmployee(true);
+      await createEmployee(employeeForm);
+      setShowAddEmployee(false);
+      setEmployeeForm({ name: '', email: '', phone: '', password: '' });
+    } catch (err) {
+      console.error('Create employee failed', err);
+    } finally {
+      setSubmittingEmployee(false);
+    }
   };
 
   // Calculate stock analytics
@@ -359,6 +377,61 @@ const AdminDashboard = () => {
         )}
       </div>
 
+      {/* Team Management */}
+      <div className="bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/30 hover:shadow-3xl transition-all duration-500">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <Users className="w-8 h-8 text-blue-600" />
+              Team Management
+            </h2>
+            <p className="text-gray-600 mt-1">Manage employees and review leave requests</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowAddEmployee(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              <UserCheck className="w-5 h-5" />
+              Add Employee
+            </button>
+            <button
+              onClick={() => navigate('/admin/employees')}
+              className="flex items-center gap-2 px-6 py-3 border border-blue-300 text-blue-700 rounded-xl hover:bg-blue-50 transition-colors"
+            >
+              <Eye className="w-5 h-5" />
+              Employees
+            </button>
+            <button
+              onClick={() => navigate('/admin/leaves')}
+              className="flex items-center gap-2 px-6 py-3 border border-emerald-300 text-emerald-700 rounded-xl hover:bg-emerald-50 transition-colors"
+            >
+              <Calendar className="w-5 h-5" />
+              Leave Requests
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white/80 p-6 rounded-2xl border border-gray-100">
+            <p className="text-sm text-gray-600">Quick Actions</p>
+            <div className="mt-4 space-y-3">
+              <button onClick={() => setShowAddEmployee(true)} className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add Employee</button>
+              <button onClick={() => navigate('/admin/employees')} className="w-full py-2 border rounded-lg hover:bg-gray-50">Manage Employees</button>
+              <button onClick={() => navigate('/admin/leaves')} className="w-full py-2 border rounded-lg hover:bg-gray-50">Review Leaves</button>
+            </div>
+          </div>
+          <div className="md:col-span-2 bg-white/80 p-6 rounded-2xl border border-gray-100">
+            <p className="text-sm text-gray-600">Guidelines</p>
+            <ul className="mt-3 text-sm text-gray-700 list-disc list-inside space-y-1">
+              <li>Use Add Employee to create staff accounts with role "employee"</li>
+              <li>Employees can apply leave from Staff area; review under Leave Requests</li>
+              <li>Only admins can access these pages</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Stock Distribution Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
@@ -600,7 +673,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  <span>High Stock (>50)</span>
+                  <span>High Stock (50)</span>
                 </div>
               </div>
             </div>
@@ -656,6 +729,29 @@ const AdminDashboard = () => {
           </div>
         </button>
       </div>
+
+      {showAddEmployee && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Add Employee</h3>
+              <button onClick={() => setShowAddEmployee(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateEmployee} className="space-y-3">
+              <input className="w-full border rounded-md px-3 py-2" placeholder="Full name" value={employeeForm.name} onChange={(e)=>setEmployeeForm({...employeeForm, name: e.target.value})} required />
+              <input className="w-full border rounded-md px-3 py-2" placeholder="Email" type="email" value={employeeForm.email} onChange={(e)=>setEmployeeForm({...employeeForm, email: e.target.value})} required />
+              <input className="w-full border rounded-md px-3 py-2" placeholder="Phone" value={employeeForm.phone} onChange={(e)=>setEmployeeForm({...employeeForm, phone: e.target.value})} />
+              <input className="w-full border rounded-md px-3 py-2" placeholder="Password (optional)" type="text" value={employeeForm.password} onChange={(e)=>setEmployeeForm({...employeeForm, password: e.target.value})} />
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={()=>setShowAddEmployee(false)} className="px-4 py-2 border rounded-md">Cancel</button>
+                <button type="submit" disabled={submittingEmployee} className="px-4 py-2 bg-primary-600 text-white rounded-md disabled:opacity-60">{submittingEmployee ? 'Creating...' : 'Create'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       </div>
     </div>
     </AdminLayout>

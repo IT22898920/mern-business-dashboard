@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { generateToken } from '../utils/jwt.js';
 
 // Demo users for testing without database
 const demoUsers = [
@@ -15,6 +16,27 @@ const demoUsers = [
     name: 'Demo User',
     role: 'customer',
     password: 'user123'
+  },
+  {
+    _id: 'demo_employee_id',
+    email: 'employee@example.com',
+    name: 'Demo Employee',
+    role: 'employee',
+    password: 'employee123'
+  },
+  {
+    _id: 'demo_designer_id',
+    email: 'designer@example.com',
+    name: 'Demo Designer',
+    role: 'designer',
+    password: 'designer123'
+  },
+  {
+    _id: 'demo_supplier_id',
+    email: 'supplier@example.com',
+    name: 'Demo Supplier',
+    role: 'supplier',
+    password: 'supplier123'
   }
 ];
 
@@ -72,13 +94,7 @@ const demoCategories = [
   }
 ];
 
-const generateToken = (userId, role) => {
-  return jwt.sign(
-    { userId, role },
-    process.env.JWT_SECRET || 'demo_secret_key',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-  );
-};
+// Removed local generateToken function - using the one from utils/jwt.js
 
 export const demoLogin = (req, res) => {
   try {
@@ -94,8 +110,13 @@ export const demoLogin = (req, res) => {
       });
     }
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
+    // Generate token using the proper JWT utility
+    const token = generateToken({ 
+      userId: user._id, 
+      role: user.role,
+      type: 'access',
+      iat: Math.floor(Date.now() / 1000)
+    });
 
     // Return user data (excluding password)
     const { password: _, ...userWithoutPassword } = user;

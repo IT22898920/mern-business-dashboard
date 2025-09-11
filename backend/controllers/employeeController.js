@@ -37,4 +37,40 @@ export const createEmployee = asyncHandler(async (req, res) => {
   res.status(201).json({ status: 'success', data: { employee: user.profile } });
 });
 
+// Admin: update employee (name, phone, email active)
+export const updateEmployee = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, email, phone, isActive } = req.body;
+
+  const user = await User.findById(id);
+  if (!user || user.role !== 'employee') {
+    return res.status(404).json({ status: 'error', message: 'Employee not found' });
+  }
+
+  if (email && email !== user.email) {
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res.status(409).json({ status: 'error', message: 'Email already in use' });
+    }
+    user.email = email;
+  }
+  if (typeof name === 'string') user.name = name;
+  if (typeof phone === 'string') user.phone = phone;
+  if (typeof isActive === 'boolean') user.isActive = isActive;
+
+  await user.save();
+  res.status(200).json({ status: 'success', data: { employee: user.profile } });
+});
+
+// Admin: delete employee
+export const deleteEmployee = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (!user || user.role !== 'employee') {
+    return res.status(404).json({ status: 'error', message: 'Employee not found' });
+  }
+  await user.deleteOne();
+  res.status(200).json({ status: 'success', message: 'Employee deleted' });
+});
+
 

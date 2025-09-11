@@ -85,6 +85,15 @@ const AdminLayout = ({ children }) => {
       badgeColor: applicationStats.pending > 0 ? 'bg-orange-500' : null
     },
     {
+      title: 'Employees',
+      icon: UserCog,
+      path: '/admin/employees',
+      subMenu: [
+        { title: 'Employee List', path: '/admin/employees' },
+        { title: 'Leave Requests', path: '/admin/leaves' }
+      ]
+    },
+    {
       title: 'Interior Designers',
       icon: Palette,
       path: '/admin/designers'
