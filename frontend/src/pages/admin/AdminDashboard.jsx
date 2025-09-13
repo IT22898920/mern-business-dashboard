@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import {
   TrendingUp, TrendingDown, Package, DollarSign, Users, ShoppingCart,
   AlertTriangle, Eye, BarChart3, PieChart, Activity, ArrowUp, ArrowDown,
-  Calendar, Filter, Download, RefreshCw, Zap, Target, Star, Clock, UserCheck, Link, X
+  Calendar, Filter, Download, RefreshCw, Zap, Target, Star, Clock, UserCheck, Link, X, UserPlus, CheckCircle2, XCircle
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { useApplicationStats } from '../../hooks/useApplicationStats';
 import { useNavigate } from 'react-router-dom';
+import { employeeService } from '../../services/employeeService';
+import { leaveService } from '../../services/leaveService';
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [employees, setEmployees] = useState([]);
+  const [newEmployee, setNewEmployee] = useState({ name: '', email: '', password: '' });
+  const [leaves, setLeaves] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   
   const navigate = useNavigate();
@@ -20,6 +25,8 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchProducts();
+    loadEmployees();
+    loadLeaves();
   }, []);
 
   const fetchProducts = async () => {
@@ -45,7 +52,44 @@ const AdminDashboard = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchProducts();
+    await loadEmployees();
+    await loadLeaves();
     setTimeout(() => setRefreshing(false), 500);
+  };
+
+  const loadEmployees = async () => {
+    try {
+      const data = await employeeService.listEmployees({ limit: 5 });
+      setEmployees(data.users || []);
+    } catch (e) {
+      setEmployees([]);
+    }
+  };
+
+  const createEmployee = async (e) => {
+    e.preventDefault();
+    const created = await employeeService.createEmployee(newEmployee);
+    setNewEmployee({ name: '', email: '', password: '' });
+    await loadEmployees();
+  };
+
+  const loadLeaves = async () => {
+    try {
+      const data = await leaveService.getAllLeaves({ status: 'pending' });
+      setLeaves(Array.isArray(data) ? data : data);
+    } catch (e) {
+      setLeaves([]);
+    }
+  };
+
+  const approveLeave = async (id) => {
+    await leaveService.approveLeave(id, 'Approved by admin');
+    await loadLeaves();
+  };
+
+  const rejectLeave = async (id) => {
+    await leaveService.rejectLeave(id, 'Rejected by admin');
+    await loadLeaves();
   };
 
   // Calculate stock analytics
@@ -655,6 +699,70 @@ const AdminDashboard = () => {
             <p className="text-sm text-gray-600">Configure notifications</p>
           </div>
         </button>
+      </div>
+
+      {/* Employee Management & Leave Approvals */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center"><UserPlus className="w-5 h-5 mr-2 text-blue-600" /> Add Employee</h2>
+          </div>
+          <form onSubmit={createEmployee} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input required placeholder="Name" className="border rounded px-3 py-2" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} />
+            <input required type="email" placeholder="Email" className="border rounded px-3 py-2" value={newEmployee.email} onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} />
+            <input required type="password" placeholder="Password" className="border rounded px-3 py-2" value={newEmployee.password} onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })} />
+            <button className="md:col-span-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create</button>
+          </form>
+
+          <h3 className="mt-6 font-semibold text-gray-900">Recent Employees</h3>
+          <ul className="mt-2 divide-y">
+            {employees.map(emp => (
+              <li key={emp._id} className="py-2 flex justify-between">
+                <span>{emp.name} • {emp.email}</span>
+                <span className="text-xs px-2 py-1 rounded bg-gray-100">{emp.role}</span>
+              </li>
+            ))}
+            {employees.length === 0 && (
+              <li className="py-2 text-gray-500">No employees yet.</li>
+            )}
+          </ul>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Pending Leave Requests</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-600">
+                  <th className="py-2">Employee</th>
+                  <th className="py-2">Type</th>
+                  <th className="py-2">Dates</th>
+                  <th className="py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(leaves) && leaves.map(l => (
+                  <tr key={l._id} className="border-t">
+                    <td className="py-2">{l.employee?.name || 'N/A'}</td>
+                    <td className="py-2 capitalize">{l.type}</td>
+                    <td className="py-2">{new Date(l.startDate).toLocaleDateString()} - {new Date(l.endDate).toLocaleDateString()}</td>
+                    <td className="py-2 space-x-2">
+                      <button onClick={() => approveLeave(l._id)} className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"><CheckCircle2 className="w-4 h-4 mr-1" />Approve</button>
+                      <button onClick={() => rejectLeave(l._id)} className="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"><XCircle className="w-4 h-4 mr-1" />Reject</button>
+                    </td>
+                  </tr>
+                ))}
+                {(!Array.isArray(leaves) || leaves.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="py-4 text-center text-gray-500">No pending leaves.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       </div>
     </div>

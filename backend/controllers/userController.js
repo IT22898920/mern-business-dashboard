@@ -1,7 +1,7 @@
 import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
-import { deleteImageFromCloudinary } from '../config/cloudinary.js';
+import { uploadBase64ToCloudinary, deleteImageFromCloudinary } from '../config/cloudinary.js';
 
 // Get all users (Admin only)
 export const getAllUsers = asyncHandler(async (req, res) => {
@@ -154,6 +154,39 @@ export const getUsersByRole = asyncHandler(async (req, res) => {
       count: users.length
     }
   });
+});
+
+// Create employee (Admin only)
+export const createEmployee = asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+
+  const { name, email, phone, password, avatar } = req.body;
+
+  const existing = await User.findOne({ email: email.toLowerCase().trim() });
+  if (existing) {
+    return res.status(409).json({ status: 'error', message: 'User with this email already exists' });
+  }
+
+  let avatarData = { public_id: null, url: 'https://res.cloudinary.com/dxkufsejm/image/upload/v1625661662/avatars/default_avatar.png' };
+  if (avatar && typeof avatar === 'string' && avatar.startsWith('data:image')) {
+    try {
+      avatarData = await uploadBase64ToCloudinary(avatar, 'mern-business-dashboard/avatars');
+    } catch (e) {
+      return res.status(400).json({ status: 'error', message: 'Failed to upload avatar image' });
+    }
+  }
+
+  const user = new User({ name: name.trim(), email: email.toLowerCase().trim(), phone, password, role: 'employee', avatar: avatarData });
+  await user.save();
+
+  res.status(201).json({ status: 'success', message: 'Employee created successfully', data: { user: user.profile } });
 });
 
 // Get user statistics (Admin only)
