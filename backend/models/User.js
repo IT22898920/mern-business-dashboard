@@ -79,6 +79,81 @@ const userSchema = new mongoose.Schema({
   lockUntil: {
     type: Date,
     default: null
+  },
+  
+  // Supplier-specific fields
+  companyName: {
+    type: String,
+    trim: true
+  },
+  contactPersonTitle: {
+    type: String,
+    trim: true
+  },
+  website: {
+    type: String,
+    trim: true
+  },
+  address: {
+    street: { type: String, trim: true },
+    city: { type: String, trim: true },
+    state: { type: String, trim: true },
+    zipCode: { type: String, trim: true },
+    country: { type: String, trim: true }
+  },
+  businessLicense: {
+    type: String,
+    trim: true
+  },
+  taxId: {
+    type: String,
+    trim: true
+  },
+  establishedYear: {
+    type: Number,
+    min: 1900,
+    max: new Date().getFullYear()
+  },
+  employeeCount: {
+    type: String,
+    enum: ['1-10', '11-50', '50-100', '100-500', '500+']
+  },
+  description: {
+    type: String,
+    maxlength: [1000, 'Description cannot exceed 1000 characters']
+  },
+  specialties: [{
+    type: String,
+    trim: true
+  }],
+  services: [{
+    type: String,
+    trim: true
+  }],
+  certifications: [{
+    type: String,
+    trim: true
+  }],
+  businessHours: {
+    monday: { open: String, close: String, closed: Boolean },
+    tuesday: { open: String, close: String, closed: Boolean },
+    wednesday: { open: String, close: String, closed: Boolean },
+    thursday: { open: String, close: String, closed: Boolean },
+    friday: { open: String, close: String, closed: Boolean },
+    saturday: { open: String, close: String, closed: Boolean },
+    sunday: { open: String, close: String, closed: Boolean }
+  },
+  
+  // Supplier statistics
+  stats: {
+    overallRating: { type: Number, default: 0, min: 0, max: 5 },
+    totalOrders: { type: Number, default: 0, min: 0 },
+    onTimeDelivery: { type: Number, default: 0, min: 0, max: 100 },
+    productsSupplied: { type: Number, default: 0, min: 0 },
+    yearsOfService: { type: Number, default: 0, min: 0 },
+    customerSatisfaction: { type: Number, default: 0, min: 0, max: 5 },
+    responseTime: { type: String, default: '0 hrs' },
+    qualityScore: { type: Number, default: 0, min: 0, max: 5 }
   }
 }, {
   timestamps: true
@@ -86,7 +161,7 @@ const userSchema = new mongoose.Schema({
 
 // Virtual for user's full profile
 userSchema.virtual('profile').get(function() {
-  return {
+  const baseProfile = {
     id: this._id,
     name: this.name,
     email: this.email,
@@ -97,6 +172,29 @@ userSchema.virtual('profile').get(function() {
     lastLogin: this.lastLogin,
     createdAt: this.createdAt
   };
+
+  // Add supplier-specific fields if user is a supplier
+  if (this.role === 'supplier') {
+    return {
+      ...baseProfile,
+      companyName: this.companyName,
+      contactPersonTitle: this.contactPersonTitle,
+      website: this.website,
+      address: this.address,
+      businessLicense: this.businessLicense,
+      taxId: this.taxId,
+      establishedYear: this.establishedYear,
+      employeeCount: this.employeeCount,
+      description: this.description,
+      specialties: this.specialties || [],
+      services: this.services || [],
+      certifications: this.certifications || [],
+      businessHours: this.businessHours,
+      stats: this.stats
+    };
+  }
+
+  return baseProfile;
 });
 
 // Index for better query performance

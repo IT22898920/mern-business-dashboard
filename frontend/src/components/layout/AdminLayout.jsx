@@ -31,17 +31,6 @@ const AdminLayout = ({ children }) => {
       badge: null
     },
     {
-      title: 'Users',
-      icon: Users,
-      path: '/admin/users',
-      badge: '12',
-      subMenu: [
-        { title: 'All Users', path: '/admin/users' },
-        { title: 'Roles & Permissions', path: '/admin/users/roles' },
-        { title: 'User Activities', path: '/admin/users/activities' }
-      ]
-    },
-    {
       title: 'Products',
       icon: Package,
       path: '/admin/products',
@@ -49,8 +38,7 @@ const AdminLayout = ({ children }) => {
       subMenu: [
         { title: 'All Products', path: '/admin/products' },
         { title: 'Categories', path: '/admin/categories' },
-        { title: 'Inventory Management', path: '/admin/inventory' },
-        { title: 'Reviews', path: '/admin/products/reviews' }
+        { title: 'Inventory Management', path: '/admin/inventory' }
       ]
     },
     {
@@ -60,21 +48,13 @@ const AdminLayout = ({ children }) => {
       badge: null
     },
     {
-      title: 'Orders',
-      icon: ShoppingCart,
-      path: '/admin/orders',
-      badge: '5',
-      badgeColor: 'bg-red-500'
-    },
-    {
       title: 'Suppliers',
       icon: Truck,
       path: '/admin/suppliers',
       subMenu: [
         { title: 'All Suppliers', path: '/admin/suppliers' },
         { title: 'Supplier Applications', path: '/admin/supplier-applications' },
-        { title: 'Supplier Responses', path: '/admin/reorder-responses' },
-        { title: 'Application Analytics', path: '/admin/suppliers/analytics' }
+        { title: 'Supplier Responses', path: '/admin/reorder-responses' }
       ]
     },
     {
@@ -88,43 +68,6 @@ const AdminLayout = ({ children }) => {
       title: 'Interior Designers',
       icon: Palette,
       path: '/admin/designers'
-    },
-    {
-      title: 'Analytics',
-      icon: BarChart3,
-      path: '/admin/analytics',
-      subMenu: [
-        { title: 'Sales Overview', path: '/admin/analytics/sales' },
-        { title: 'User Analytics', path: '/admin/analytics/users' },
-        { title: 'Product Performance', path: '/admin/analytics/products' }
-      ]
-    },
-    {
-      title: 'Finance',
-      icon: CreditCard,
-      path: '/admin/finance',
-      subMenu: [
-        { title: 'Transactions', path: '/admin/finance/transactions' },
-        { title: 'Invoices', path: '/admin/finance/invoices' },
-        { title: 'Payment Methods', path: '/admin/finance/payments' }
-      ]
-    },
-    {
-      title: 'Reports',
-      icon: FileText,
-      path: '/admin/reports'
-    },
-    {
-      title: 'Messages',
-      icon: MessageSquare,
-      path: '/admin/messages',
-      badge: '3',
-      badgeColor: 'bg-blue-500'
-    },
-    {
-      title: 'Calendar',
-      icon: Calendar,
-      path: '/admin/calendar'
     },
     {
       title: 'Settings',
@@ -303,11 +246,11 @@ const AdminLayout = ({ children }) => {
             {menuItems.map((item, index) => (
               <div key={item.title} className="relative">
                 {/* Add separator for specific sections */}
-                {(item.title === 'Analytics' || item.title === 'Settings') && isSidebarOpen && (
+                {item.title === 'Settings' && isSidebarOpen && (
                   <div className="flex items-center gap-3 px-3 pt-4 pb-2">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
                     <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
-                      {item.title === 'Analytics' ? 'Insights' : 'System'}
+                      System
                     </span>
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
                   </div>

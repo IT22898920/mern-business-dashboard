@@ -27,6 +27,12 @@ import CategoryManagement from './pages/admin/CategoryManagement';
 import InventoryManagement from './pages/admin/InventoryManagement';
 import StaffDashboard from './pages/dashboards/StaffDashboard';
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
+import SupplierProducts from './pages/supplier/SupplierProducts';
+import SupplierRequests from './pages/supplier/SupplierRequests';
+import SupplierDeliveries from './pages/supplier/SupplierDeliveries';
+import SupplierReports from './pages/supplier/SupplierReports';
+import SupplierProfile from './pages/supplier/SupplierProfile';
+import SupplierSettings from './pages/supplier/SupplierSettings';
 import DesignerDashboard from './pages/dashboards/DesignerDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProductsCatalog from './pages/ProductsCatalog';
@@ -241,6 +247,54 @@ function App() {
               element={
                 <ProtectedRoute roles={['admin', 'supplier']}>
                   <SupplierDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supplier/products" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierProducts />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supplier/requests" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierRequests />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supplier/deliveries" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierDeliveries />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supplier/reports" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierReports />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supplier/profile" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/supplier/settings" 
+              element={
+                <ProtectedRoute roles={['admin', 'supplier']}>
+                  <SupplierSettings />
                 </ProtectedRoute>
               } 
             />

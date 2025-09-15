@@ -6,7 +6,8 @@ import {
   getApprovedSuppliers,
   getStockHistory,
   getLowStockAlerts,
-  bulkStockAdjustment
+  bulkStockAdjustment,
+  generateInventoryReport
 } from '../controllers/inventoryController.js';
 import { protect, restrictTo } from '../middleware/auth.js';
 
@@ -36,5 +37,8 @@ router.put('/:id/supplier', assignSupplier);
 
 // POST /api/inventory/bulk-adjust - Bulk stock adjustment
 router.post('/bulk-adjust', bulkStockAdjustment);
+
+// GET /api/inventory/reports/generate - Generate inventory reports
+router.get('/reports/generate', generateInventoryReport);
 
 export default router;

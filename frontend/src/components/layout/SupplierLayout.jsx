@@ -35,24 +35,9 @@ const SupplierLayout = ({ children }) => {
       icon: <Home className="h-5 w-5" />,
     },
     {
-      title: 'Reorder Requests',
-      path: '/supplier/requests',
-      icon: <ShoppingCart className="h-5 w-5" />,
-    },
-    {
       title: 'My Products',
       path: '/supplier/products',
       icon: <Package className="h-5 w-5" />,
-    },
-    {
-      title: 'Deliveries',
-      path: '/supplier/deliveries',
-      icon: <Truck className="h-5 w-5" />,
-    },
-    {
-      title: 'Reports',
-      path: '/supplier/reports',
-      icon: <FileText className="h-5 w-5" />,
     },
   ];
 

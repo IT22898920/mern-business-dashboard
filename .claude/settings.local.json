@@ -33,7 +33,10 @@
       "Read(//mnt/c/Users/DELL/Pictures/Screenshots/**)",
       "Bash(fuser:*)",
       "Bash(python3:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//tmp/**)",
+      "Read(//mnt/c/Users/DELL/Downloads/**)",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,9 +4,9 @@ import {
   Users, Building2, Mail, Phone, MapPin, Calendar, Star, 
   Eye, Edit, Trash2, Plus, Search, Filter, MoreVertical,
   TrendingUp, Package, Clock, CheckCircle, XCircle, 
-  Award, Globe, Briefcase, FileText, Download, RefreshCw,
+  Award, Globe, Briefcase, FileText, RefreshCw,
   Activity, Zap, Shield, UserCheck, AlertTriangle, Crown,
-  Sparkles, Heart, Target, Layers, BarChart3
+  Sparkles, Heart, Target, Layers, BarChart3, Download
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAlert } from '../../components/AlertSystem';
@@ -108,6 +108,147 @@ const AllSuppliers = () => {
     setSelectedSupplier(supplier);
     setShowDetailsModal(true);
   };
+
+  const generateReport = async () => {
+    try {
+      showSuccess('Generating suppliers report...');
+      
+      // Create report data
+      const reportData = {
+        title: 'Suppliers Report',
+        generatedAt: new Date().toISOString(),
+        summary: {
+          totalSuppliers: stats.total,
+          activeSuppliers: stats.active,
+          pendingSuppliers: stats.pending,
+          suspendedSuppliers: stats.suspended,
+          activeRate: stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0
+        },
+        suppliers: filteredSuppliers.map(supplier => ({
+          name: supplier.name || 'Unnamed Supplier',
+          email: supplier.email,
+          companyName: supplier.companyName || supplier.name + ' Co.',
+          phone: supplier.phone || 'N/A',
+          status: supplier.status,
+          establishedYear: supplier.establishedYear || new Date(supplier.createdAt).getFullYear(),
+          address: supplier.address ? 
+            [supplier.address.street, supplier.address.city, supplier.address.state, supplier.address.zipCode, supplier.address.country]
+            .filter(Boolean).join(', ') : 'N/A',
+          website: supplier.website || 'N/A',
+          rating: supplier.stats?.overallRating?.toFixed(1) || '4.2',
+          totalOrders: supplier.stats?.totalOrders || 0,
+          onTimeDelivery: supplier.stats?.onTimeDelivery || 'N/A',
+          registrationDate: supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString() : 'N/A',
+          emailVerified: supplier.isEmailVerified ? 'Yes' : 'No'
+        }))
+      };
+
+      // Send report generation request to backend
+      const response = await fetch('/api/reports/suppliers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include',
+        body: JSON.stringify(reportData)
+      });
+
+      if (response.ok) {
+        // If backend supports PDF generation, download the PDF
+        if (response.headers.get('content-type') === 'application/pdf') {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `suppliers-report-${new Date().toISOString().split('T')[0]}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          showSuccess('Report downloaded successfully!');
+        } else {
+          // Fallback: Generate CSV report
+          generateCSVReport(reportData);
+        }
+      } else {
+        // Fallback: Generate CSV report
+        generateCSVReport(reportData);
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      // Fallback: Generate CSV report
+      generateCSVReport();
+    }
+  };
+
+  const generateCSVReport = (data) => {
+    try {
+      const currentSuppliers = data ? data.suppliers : filteredSuppliers;
+      const csvContent = [
+        // CSV Header
+        ['Name', 'Email', 'Company Name', 'Phone', 'Status', 'Established Year', 'Address', 'Website', 'Rating', 'Total Orders', 'On-Time Delivery %', 'Registration Date', 'Email Verified'].join(','),
+        // CSV Data
+        ...currentSuppliers.map(supplier => {
+          const row = data ? [
+            supplier.name,
+            supplier.email,
+            supplier.companyName,
+            supplier.phone,
+            supplier.status,
+            supplier.establishedYear,
+            supplier.address,
+            supplier.website,
+            supplier.rating,
+            supplier.totalOrders,
+            supplier.onTimeDelivery,
+            supplier.registrationDate,
+            supplier.emailVerified
+          ] : [
+            supplier.name || 'Unnamed Supplier',
+            supplier.email,
+            supplier.companyName || supplier.name + ' Co.',
+            supplier.phone || 'N/A',
+            supplier.status,
+            supplier.establishedYear || new Date(supplier.createdAt).getFullYear(),
+            supplier.address ? [supplier.address.street, supplier.address.city, supplier.address.state, supplier.address.zipCode, supplier.address.country].filter(Boolean).join(', ') : 'N/A',
+            supplier.website || 'N/A',
+            supplier.stats?.overallRating?.toFixed(1) || '4.2',
+            supplier.stats?.totalOrders || 0,
+            supplier.stats?.onTimeDelivery || 'N/A',
+            supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString() : 'N/A',
+            supplier.isEmailVerified ? 'Yes' : 'No'
+          ];
+          
+          // Escape commas and quotes in CSV data
+          return row.map(field => {
+            const fieldStr = String(field);
+            if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+              return `"${fieldStr.replace(/"/g, '""')}"`;
+            }
+            return fieldStr;
+          }).join(',');
+        })
+      ].join('\n');
+
+      // Create and download CSV file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `suppliers-report-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      showSuccess(`CSV report downloaded successfully! (${currentSuppliers.length} suppliers)`);
+    } catch (error) {
+      console.error('Error generating CSV report:', error);
+      showError('Failed to generate CSV report');
+    }
+  };
+
 
   if (loading) {
     return (
@@ -225,38 +366,10 @@ const AllSuppliers = () => {
                     <RefreshCw className="h-5 w-5 text-white group-hover:rotate-180 transition-transform duration-500" />
                   </button>
                   
-                  <button 
-                    onClick={() => {
-                      // Export functionality
-                      const csvData = filteredSuppliers.map(supplier => ({
-                        'Name': supplier.name || 'N/A',
-                        'Email': supplier.email || 'N/A',
-                        'Business': supplier.profile?.businessName || 'N/A',
-                        'Type': supplier.profile?.businessType || 'N/A',
-                        'Status': supplier.status || 'N/A',
-                        'Join Date': supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString() : 'N/A'
-                      }));
-                      
-                      const headers = Object.keys(csvData[0] || {});
-                      const csvString = [
-                        headers.join(','),
-                        ...csvData.map(row => headers.map(header => `"${row[header]}"`).join(','))
-                      ].join('\\n');
-                      
-                      const blob = new Blob([csvString], { type: 'text/csv' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `suppliers-${new Date().toISOString().split('T')[0]}.csv`;
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      window.URL.revokeObjectURL(url);
-                      
-                      showSuccess('Suppliers exported successfully!');
-                    }}
-                    className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all backdrop-blur group"
-                    title="Export to CSV"
+                  <button
+                    onClick={generateReport}
+                    className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all backdrop-blur flex items-center gap-2 group"
+                    title="Generate Report"
                   >
                     <Download className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
                   </button>
@@ -383,6 +496,16 @@ const AllSuppliers = () => {
                 <option value="suspended">Suspended</option>
               </select>
 
+              {/* Generate Report Button */}
+              <button
+                onClick={generateReport}
+                className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl transition-all flex items-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                title="Generate Suppliers Report"
+              >
+                <Download className="h-4 w-4" />
+                Generate Report
+              </button>
+
               {/* View Mode Toggle */}
               <div className="flex bg-gray-100 rounded-xl p-1">
                 <button
@@ -439,7 +562,7 @@ const AllSuppliers = () => {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-white truncate">{supplier.name || 'Unnamed Supplier'}</h3>
-                      <p className="text-blue-100 text-sm truncate">{supplier.profile?.businessName || 'Business N/A'}</p>
+                      <p className="text-blue-100 text-sm truncate">{supplier.companyName || supplier.name + ' Co.' || 'Company Name'}</p>
                     </div>
                     <span className={getStatusBadge(supplier.status)}>
                       {getStatusIcon(supplier.status)}
@@ -453,30 +576,52 @@ const AllSuppliers = () => {
                   <div className="flex items-center gap-2 text-gray-600">
                     <Mail className="h-4 w-4" />
                     <span className="text-sm truncate">{supplier.email}</span>
+                    {supplier.isEmailVerified && (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    )}
                   </div>
                   
-                  {supplier.profile?.businessType && (
+                  {supplier.phone && (
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Briefcase className="h-4 w-4" />
-                      <span className="text-sm">{supplier.profile.businessType}</span>
+                      <Phone className="h-4 w-4" />
+                      <span className="text-sm">{supplier.phone}</span>
                     </div>
                   )}
 
-                  {supplier.createdAt && (
+                  {supplier.establishedYear && (
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="h-4 w-4" />
-                      <span className="text-sm">Joined {new Date(supplier.createdAt).toLocaleDateString()}</span>
+                      <span className="text-sm">Est. {supplier.establishedYear}</span>
+                    </div>
+                  )}
+
+                  {supplier.address?.city && (
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-sm">{supplier.address.city}{supplier.address.state ? `, ${supplier.address.state}` : ''}</span>
                     </div>
                   )}
 
                   {/* Rating/Performance Indicator */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="h-3 w-3 text-yellow-400 fill-current" />
+                        <Star 
+                          key={star} 
+                          className={`h-3 w-3 ${
+                            star <= (supplier.stats?.overallRating || 4.2) 
+                              ? 'text-yellow-400 fill-current' 
+                              : 'text-gray-300'
+                          }`} 
+                        />
                       ))}
+                      <span className="text-xs text-gray-500 ml-1">({supplier.stats?.overallRating?.toFixed(1) || '4.2'})</span>
                     </div>
-                    <span className="text-xs text-gray-500">(4.8)</span>
+                    {supplier.stats?.totalOrders > 0 && (
+                      <span className="text-xs text-blue-600 font-medium">
+                        {supplier.stats.totalOrders} orders
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -525,16 +670,16 @@ const AllSuppliers = () => {
                       Supplier Details
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                      Business Info
+                      Company Info
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                      Performance
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
                       Status
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                      Join Date
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                      Rating
                     </th>
                     <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">
                       Actions
@@ -557,6 +702,12 @@ const AllSuppliers = () => {
                               <Mail className="h-3 w-3" />
                               {supplier.email}
                             </div>
+                            {supplier.isEmailVerified && (
+                              <div className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                                <CheckCircle className="h-3 w-3" />
+                                Verified
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -565,12 +716,69 @@ const AllSuppliers = () => {
                         <div>
                           <div className="text-sm font-medium text-gray-900 flex items-center gap-1">
                             <Building2 className="h-3 w-3 text-gray-400" />
-                            {supplier.profile?.businessName || 'Business N/A'}
+                            {supplier.companyName || supplier.name + ' Co.' || 'Company Name'}
                           </div>
                           <div className="text-xs text-gray-500 flex items-center gap-1">
-                            <Briefcase className="h-3 w-3" />
-                            {supplier.profile?.businessType || 'Type N/A'}
+                            <Calendar className="h-3 w-3" />
+                            Est. {supplier.establishedYear || new Date(supplier.createdAt).getFullYear()}
                           </div>
+                          {supplier.employeeCount && (
+                            <div className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+                              <Users className="h-3 w-3" />
+                              {supplier.employeeCount} employees
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div>
+                          {supplier.phone && (
+                            <div className="text-sm text-gray-900 flex items-center gap-1">
+                              <Phone className="h-3 w-3 text-gray-400" />
+                              {supplier.phone}
+                            </div>
+                          )}
+                          {supplier.website && (
+                            <div className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+                              <Globe className="h-3 w-3" />
+                              <a href={supplier.website.startsWith('http') ? supplier.website : `https://${supplier.website}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                Website
+                              </a>
+                            </div>
+                          )}
+                          {supplier.address?.city && (
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                              <MapPin className="h-3 w-3" />
+                              {supplier.address.city}{supplier.address.state ? `, ${supplier.address.state}` : ''}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="flex items-center gap-1 mb-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star 
+                                key={star} 
+                                className={`h-3 w-3 ${
+                                  star <= (supplier.stats?.overallRating || 4.2) 
+                                    ? 'text-yellow-400 fill-current' 
+                                    : 'text-gray-300'
+                                }`} 
+                              />
+                            ))}
+                            <span className="text-xs text-gray-500 ml-1">({supplier.stats?.overallRating?.toFixed(1) || '4.2'})</span>
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {supplier.stats?.totalOrders || 0} orders
+                          </div>
+                          {supplier.stats?.onTimeDelivery && (
+                            <div className="text-xs text-green-600">
+                              {supplier.stats.onTimeDelivery}% on-time
+                            </div>
+                          )}
                         </div>
                       </td>
 
@@ -579,22 +787,11 @@ const AllSuppliers = () => {
                           {getStatusIcon(supplier.status)}
                           {supplier.status}
                         </span>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                          {supplier.createdAt ? new Date(supplier.createdAt).toLocaleDateString() : 'N/A'}
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} className="h-3 w-3 text-yellow-400 fill-current" />
-                          ))}
-                          <span className="text-xs text-gray-500 ml-1">(4.8)</span>
-                        </div>
+                        {supplier.lastLogin && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Last: {new Date(supplier.lastLogin).toLocaleDateString()}
+                          </div>
+                        )}
                       </td>
 
                       <td className="px-6 py-4 text-center">
@@ -640,7 +837,7 @@ const AllSuppliers = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">{selectedSupplier.name || 'Unnamed Supplier'}</h3>
-                      <p className="text-blue-100 text-sm">{selectedSupplier.profile?.businessName || 'Business details'}</p>
+                      <p className="text-blue-100 text-sm">{selectedSupplier.companyName || selectedSupplier.name + ' Company' || 'Business details'}</p>
                     </div>
                   </div>
                   <button 
@@ -664,16 +861,40 @@ const AllSuppliers = () => {
                     <div className="space-y-3">
                       <div>
                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</label>
-                        <p className="text-gray-900 mt-1">{selectedSupplier.email}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-gray-900">{selectedSupplier.email}</p>
+                          {selectedSupplier.isEmailVerified && (
+                            <CheckCircle className="h-4 w-4 text-green-500" title="Verified" />
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</label>
-                        <p className="text-gray-900 mt-1">{selectedSupplier.profile?.phone || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Address</label>
-                        <p className="text-gray-900 mt-1">{selectedSupplier.profile?.address || 'N/A'}</p>
-                      </div>
+                      {selectedSupplier.phone && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</label>
+                          <p className="text-gray-900 mt-1">{selectedSupplier.phone}</p>
+                        </div>
+                      )}
+                      {selectedSupplier.website && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Website</label>
+                          <a 
+                            href={selectedSupplier.website.startsWith('http') ? selectedSupplier.website : `https://${selectedSupplier.website}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-600 hover:underline mt-1 block"
+                          >
+                            {selectedSupplier.website}
+                          </a>
+                        </div>
+                      )}
+                      {selectedSupplier.address && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Address</label>
+                          <p className="text-gray-900 mt-1">
+                            {[selectedSupplier.address.street, selectedSupplier.address.city, selectedSupplier.address.state, selectedSupplier.address.zipCode, selectedSupplier.address.country].filter(Boolean).join(', ')}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -685,22 +906,84 @@ const AllSuppliers = () => {
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Business Name</label>
-                        <p className="text-gray-900 mt-1 font-medium">{selectedSupplier.profile?.businessName || 'N/A'}</p>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</label>
+                        <p className="text-gray-900 mt-1 font-medium">{selectedSupplier.companyName || selectedSupplier.name + ' Company'}</p>
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Business Type</label>
-                        <p className="text-gray-900 mt-1">{selectedSupplier.profile?.businessType || 'N/A'}</p>
-                      </div>
+                      {selectedSupplier.establishedYear && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Established</label>
+                          <p className="text-gray-900 mt-1">{selectedSupplier.establishedYear}</p>
+                        </div>
+                      )}
+                      {selectedSupplier.employeeCount && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Count</label>
+                          <p className="text-gray-900 mt-1">{selectedSupplier.employeeCount} employees</p>
+                        </div>
+                      )}
                       <div>
                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</label>
                         <p className="text-gray-900 mt-1">
                           {selectedSupplier.createdAt ? new Date(selectedSupplier.createdAt).toLocaleDateString() : 'N/A'}
                         </p>
                       </div>
+                      {selectedSupplier.businessLicense && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Business License</label>
+                          <p className="text-gray-900 mt-1">{selectedSupplier.businessLicense}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* Additional Information */}
+                {selectedSupplier.description && (
+                  <div className="mt-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FileText className="h-5 w-5 text-amber-600" />
+                      <h4 className="font-semibold text-gray-900">Description</h4>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed">{selectedSupplier.description}</p>
+                  </div>
+                )}
+
+                {/* Services and Specialties */}
+                {(selectedSupplier.services?.length > 0 || selectedSupplier.specialties?.length > 0) && (
+                  <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {selectedSupplier.services?.length > 0 && (
+                      <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-5 border border-cyan-200">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Briefcase className="h-5 w-5 text-cyan-600" />
+                          <h4 className="font-semibold text-gray-900">Services</h4>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedSupplier.services.map((service, index) => (
+                            <span key={index} className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium">
+                              {service}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedSupplier.specialties?.length > 0 && (
+                      <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Award className="h-5 w-5 text-pink-600" />
+                          <h4 className="font-semibold text-gray-900">Specialties</h4>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedSupplier.specialties.map((specialty, index) => (
+                            <span key={index} className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">
+                              {specialty}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Status and Performance */}
                 <div className="mt-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
@@ -722,15 +1005,28 @@ const AllSuppliers = () => {
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</label>
                       <div className="flex items-center gap-1 mt-2">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <Star key={star} className="h-4 w-4 text-yellow-400 fill-current" />
+                          <Star 
+                            key={star} 
+                            className={`h-4 w-4 ${
+                              star <= (selectedSupplier.stats?.overallRating || 4.2) 
+                                ? 'text-yellow-400 fill-current' 
+                                : 'text-gray-300'
+                            }`} 
+                          />
                         ))}
-                        <span className="text-sm text-gray-600 ml-1">(4.8)</span>
+                        <span className="text-sm text-gray-600 ml-1">({selectedSupplier.stats?.overallRating?.toFixed(1) || '4.2'})</span>
                       </div>
                     </div>
                     <div>
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Orders Completed</label>
-                      <p className="text-2xl font-bold text-purple-600 mt-1">127</p>
+                      <p className="text-2xl font-bold text-purple-600 mt-1">{selectedSupplier.stats?.totalOrders || 0}</p>
                     </div>
+                    {selectedSupplier.stats?.onTimeDelivery && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">On-Time Delivery</label>
+                        <p className="text-2xl font-bold text-green-600 mt-1">{selectedSupplier.stats.onTimeDelivery}%</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -764,6 +1060,7 @@ const AllSuppliers = () => {
           </div>
         </div>
       )}
+
     </AdminLayout>
   );
 };
