@@ -67,6 +67,19 @@ const connectDB = async () => {
 
 connectDB();
 
+// Middleware to ensure database connection for DB-dependent routes
+const requireDb = (req, res, next) => {
+  // 1 = connected, 2 = connecting
+  const isConnected = mongoose.connection.readyState === 1;
+  if (!isConnected) {
+    return res.status(503).json({
+      status: 'error',
+      message: 'Database not connected. Please try again later.',
+    });
+  }
+  next();
+};
+
 // ------------------------
 // Import Routes
 // ------------------------
@@ -88,32 +101,32 @@ import reportRoutes from './routes/reportRoutes.js'; // PDF Reports
 // ------------------------
 // API Routes
 // ------------------------
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/supplier-applications', supplierApplicationRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use('/api/auth', requireDb, authRoutes);
+app.use('/api/users', requireDb, userRoutes);
+app.use('/api/products', requireDb, productRoutes);
+app.use('/api/categories', requireDb, categoryRoutes);
+app.use('/api/supplier-applications', requireDb, supplierApplicationRoutes);
+app.use('/api/inventory', requireDb, inventoryRoutes);
 
 
-app.use('/api/reorders', reorderRoutes);
-app.use('/api/leaves', leaveRoutes);
+app.use('/api/reorders', requireDb, reorderRoutes);
+app.use('/api/leaves', requireDb, leaveRoutes);
 
 // Demo routes (for development without database)
 
 app.use('/api/demo', demoRoutes);
 
 // Designs routes
-app.use('/api/designs', designRoutes);
+app.use('/api/designs', requireDb, designRoutes);
 
 // Client contacts routes
-app.use('/api/client-contacts', clientContactRoutes);
+app.use('/api/client-contacts', requireDb, clientContactRoutes);
 
 // Notifications routes
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/notifications', requireDb, notificationRoutes);
 
 // Reports routes
-app.use('/api/reports', reportRoutes);
+app.use('/api/reports', requireDb, reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

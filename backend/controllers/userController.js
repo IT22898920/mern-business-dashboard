@@ -2,7 +2,6 @@ import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { uploadBase64ToCloudinary, deleteImageFromCloudinary } from '../config/cloudinary.js';
-import { deleteImageFromCloudinary } from '../config/cloudinary.js';
 import PDFDocument from 'pdfkit';
 
 
@@ -69,7 +68,7 @@ export const getUserById = asyncHandler(async (req, res) => {
 // Update user (Admin only)
 export const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email, role, isActive } = req.body;
+  const { name, email, role, isActive, phone, gender, age, position, salary, address, qualifications } = req.body;
 
   const user = await User.findById(id);
   
@@ -85,6 +84,29 @@ export const updateUser = asyncHandler(async (req, res) => {
   if (email) user.email = email.toLowerCase().trim();
   if (role) user.role = role;
   if (typeof isActive === 'boolean') user.isActive = isActive;
+  if (phone) user.phone = phone;
+
+  // Update employee-specific profile fields
+  if (['employee'].includes(user.role) || role === 'employee') {
+    user.employeeProfile = user.employeeProfile || {};
+    if (gender !== undefined) user.employeeProfile.gender = gender;
+    if (age !== undefined) user.employeeProfile.age = age;
+    if (position !== undefined) user.employeeProfile.position = position?.toString();
+    if (salary !== undefined) user.employeeProfile.salary = salary;
+    if (address && typeof address === 'object') {
+      user.employeeProfile.address = {
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        zipCode: address.zipCode,
+        country: address.country
+      };
+    }
+    if (qualifications) {
+      if (Array.isArray(qualifications)) user.employeeProfile.qualifications = qualifications;
+      else if (typeof qualifications === 'string') user.employeeProfile.qualifications = qualifications.split(',').map(q => q.trim()).filter(Boolean);
+    }
+  }
 
   await user.save();
 

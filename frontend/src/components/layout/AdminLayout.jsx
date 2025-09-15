@@ -31,6 +31,11 @@ const AdminLayout = ({ children }) => {
       badge: null
     },
     {
+      title: 'Employees',
+      icon: Users,
+      path: '/admin/employees'
+    },
+    {
       title: 'Products',
       icon: Package,
       path: '/admin/products',

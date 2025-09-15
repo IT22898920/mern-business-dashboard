@@ -80,6 +80,23 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+
+  // Employee-specific fields
+  employeeProfile: {
+    phone: { type: String, trim: true },
+    gender: { type: String, enum: ['male', 'female', 'other'], trim: true },
+    age: { type: Number, min: 16, max: 100 },
+    position: { type: String, trim: true },
+    salary: { type: Number, min: 0 },
+    address: {
+      street: { type: String, trim: true },
+      city: { type: String, trim: true },
+      state: { type: String, trim: true },
+      zipCode: { type: String, trim: true },
+      country: { type: String, trim: true }
+    },
+    qualifications: [{ type: String, trim: true }]
+  },
   
   // Supplier-specific fields
   companyName: {
@@ -165,7 +182,7 @@ userSchema.virtual('profile').get(function() {
     id: this._id,
     name: this.name,
     email: this.email,
-    phone: this.phone,
+    phone: this.phone || this.employeeProfile?.phone,
     avatar: this.avatar,
     role: this.role,
     isEmailVerified: this.isEmailVerified,
@@ -191,6 +208,19 @@ userSchema.virtual('profile').get(function() {
       certifications: this.certifications || [],
       businessHours: this.businessHours,
       stats: this.stats
+    };
+  }
+
+  // Add employee-specific fields if user is an employee
+  if (this.role === 'employee') {
+    return {
+      ...baseProfile,
+      gender: this.employeeProfile?.gender || null,
+      age: this.employeeProfile?.age || null,
+      position: this.employeeProfile?.position || null,
+      salary: this.employeeProfile?.salary || null,
+      address: this.employeeProfile?.address || null,
+      qualifications: this.employeeProfile?.qualifications || []
     };
   }
 
