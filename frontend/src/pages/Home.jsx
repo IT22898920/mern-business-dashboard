@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, ArrowRight, Mail, Phone, Eye, Calendar, User, Lock } from 'lucide-react';
+import { Star, ArrowRight, Mail, Phone, Eye, Calendar, User, Lock, UserCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -7,7 +7,7 @@ import { getAllDesigns } from '../services/designService';
 import { useAuth } from '../contexts/AuthContext';
 
 const InteriorDesignHomePage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [designs, setDesigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,11 +33,44 @@ const InteriorDesignHomePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <Navbar />
 
+      {/* Profile Icon for Employees */}
+      {isAuthenticated && user && user.role === 'employee' && (
+        <div className="fixed top-24 right-6 z-50">
+          <Link
+            to="/staff/dashboard"
+            className="group bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+            title="Go to Staff Dashboard"
+          >
+            <UserCircle className="h-8 w-8 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+          </Link>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 opacity-70"></div>
         
         <div className="relative z-10 text-center max-w-6xl mx-auto">
+          {/* Employee Welcome Message */}
+          {isAuthenticated && user && user.role === 'employee' && (
+            <div className="mb-8">
+              <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/20 backdrop-blur-sm text-gray-700 mb-4">
+                <UserCircle className="h-5 w-5 mr-2 text-purple-600" />
+                <span className="text-sm font-medium">Welcome back, {user.name || 'Employee'}!</span>
+              </div>
+              <div className="flex justify-center">
+                <Link
+                  to="/staff/dashboard"
+                  className="inline-flex items-center px-6 py-3 bg-white/90 backdrop-blur-sm text-purple-700 rounded-full font-semibold hover:bg-white hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                >
+                  <UserCircle className="h-5 w-5 mr-2" />
+                  Go to Dashboard
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </div>
+            </div>
+          )}
+          
           <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500">
               Transform
