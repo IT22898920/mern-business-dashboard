@@ -110,8 +110,6 @@ export const authAPI = {
 export const userAPI = {
   // Get all users
   getAllUsers: (params = {}) => api.get('/users', { params }),
-  // Create user (Admin)
-  createUser: (userData) => api.post('/users', userData),
   
   // Get user by ID
   getUserById: (id) => api.get(`/users/profile/${id}`),
