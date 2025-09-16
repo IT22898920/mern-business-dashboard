@@ -157,6 +157,14 @@ function App() {
               } 
             />
             <Route 
+              path="/admin/employees" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/admin/products" 
               element={
                 <ProtectedRoute roles={['admin']}>

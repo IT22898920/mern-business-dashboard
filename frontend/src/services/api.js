@@ -114,6 +114,9 @@ export const userAPI = {
   // Get user by ID
   getUserById: (id) => api.get(`/users/profile/${id}`),
   
+  // Create user (Admin)
+  createUser: (userData) => api.post('/users', userData),
+  
   // Update user (Admin)
   updateUser: (id, userData) => api.put(`/users/${id}`, userData),
   

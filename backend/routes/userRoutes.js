@@ -8,7 +8,9 @@ import {
   getUserStats, 
   deactivateUser, 
   activateUser, 
-  unlockUser
+  unlockUser, 
+  createEmployee 
+  //unlockUser
 } from '../controllers/userController.js';
 import User from '../models/User.js';
 import { protect, adminOnly, staffOnly } from '../middleware/auth.js';
@@ -18,6 +20,7 @@ import {
   validateRole,
   validatePagination
 } from '../middleware/validation.js';
+import { body } from 'express-validator';
 
 const router = express.Router();
 
@@ -62,6 +65,12 @@ router.use(adminOnly);
 // User management routes
 router.get('/', validatePagination, getAllUsers);
 router.get('/stats', getUserStats);
+router.post('/', [
+  body('name').isString().isLength({ min: 2 }).withMessage('Name is required'),
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password').isString().isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('phone').optional().isString()
+], createEmployee);
 router.put('/:id', validateUpdateUser, updateUser);
 router.delete('/:id', validateMongoId, deleteUser);
 

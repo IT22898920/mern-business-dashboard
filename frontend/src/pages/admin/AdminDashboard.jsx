@@ -1,26 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TrendingUp, TrendingDown, Package, DollarSign, Users, ShoppingCart,
   AlertTriangle, Eye, BarChart3, PieChart, Activity, ArrowUp, ArrowDown,
-  Calendar, Filter, Download, RefreshCw, Zap, Target, Star, Clock, UserCheck, Link, X
+  Calendar, Filter, Download, RefreshCw, Zap, Target, Star, Clock, UserCheck, Link, X, UserPlus, CheckCircle2, XCircle
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { useApplicationStats } from '../../hooks/useApplicationStats';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { employeeService } from '../../services/employeeService';
+import { leaveService } from '../../services/leaveService';
+import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [employees, setEmployees] = useState([]);
+  const [newEmployee, setNewEmployee] = useState({ name: '', email: '', password: '' });
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', email: '', isActive: true });
+  const [leaves, setLeaves] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [creating, setCreating] = useState(false);
   
   const navigate = useNavigate();
+  const location = useLocation();
   const { stats: applicationStats } = useApplicationStats();
+  const employeesSectionRef = useRef(null);
 
   useEffect(() => {
     fetchProducts();
+    loadEmployees();
+    loadLeaves();
   }, []);
+
+  // If navigated to /admin/employees, scroll to Employees section
+  useEffect(() => {
+    if (location.pathname === '/admin/employees' && employeesSectionRef.current) {
+      employeesSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.pathname]);
 
   const fetchProducts = async () => {
     try {
@@ -45,7 +65,91 @@ const AdminDashboard = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchProducts();
+    await loadEmployees();
+    await loadLeaves();
     setTimeout(() => setRefreshing(false), 500);
+  };
+
+  const loadEmployees = async () => {
+    try {
+      const data = await employeeService.listEmployees({ limit: 25 });
+      setEmployees(data.users || []);
+    } catch (e) {
+      setEmployees([]);
+    }
+  };
+
+  const createEmployee = async (e) => {
+    e.preventDefault();
+    try {
+      setCreating(true);
+      await employeeService.createEmployee({
+        name: newEmployee.name,
+        email: newEmployee.email,
+        password: newEmployee.password,
+        salary: newEmployee.salary,
+        position: newEmployee.position,
+        age: newEmployee.age,
+        gender: newEmployee.gender,
+        address: {
+          street: newEmployee.street,
+          city: newEmployee.city,
+          state: newEmployee.state,
+          zipCode: newEmployee.zipCode,
+          country: newEmployee.country,
+        },
+        qualifications: newEmployee.qualifications
+      });
+      toast.success('Employee created');
+      setNewEmployee({ name: '', email: '', password: '' });
+      await loadEmployees();
+    } catch (error) {
+      toast.error(typeof error === 'string' ? error : 'Failed to create employee');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const startEdit = (emp) => {
+    setEditingEmployee(emp);
+    setEditForm({ name: emp.name || '', email: emp.email || '', isActive: emp.isActive !== false });
+  };
+
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    if (!editingEmployee) return;
+    await employeeService.updateEmployee(editingEmployee._id, {
+      name: editForm.name,
+      email: editForm.email,
+      isActive: editForm.isActive
+    });
+    setEditingEmployee(null);
+    await loadEmployees();
+  };
+
+  const deleteEmployee = async (id) => {
+    if (!window.confirm('Delete this employee?')) return;
+    await employeeService.deleteEmployee(id);
+    await loadEmployees();
+  };
+
+  const loadLeaves = async () => {
+    try {
+      const data = await leaveService.getAllLeaves({ status: 'pending' });
+      setLeaves(Array.isArray(data) ? data : data);
+    } catch (e) {
+      setLeaves([]);
+    }
+  };
+
+  const approveLeave = async (id) => {
+    await leaveService.approveLeave(id, 'Approved by admin');
+    await loadLeaves();
+  };
+
+  const rejectLeave = async (id) => {
+    await leaveService.rejectLeave(id, 'Rejected by admin');
+    await loadLeaves();
   };
 
   // Calculate stock analytics
@@ -600,7 +704,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  <span>High Stock (>50)</span>
+                  <span>High Stock (&gt;50)</span>
                 </div>
               </div>
             </div>
@@ -655,6 +759,129 @@ const AdminDashboard = () => {
             <p className="text-sm text-gray-600">Configure notifications</p>
           </div>
         </button>
+      </div>
+
+      {/* Employee Management & Leave Approvals */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <div ref={employeesSectionRef} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center"><UserPlus className="w-5 h-5 mr-2 text-blue-600" /> Add Employee</h2>
+          </div>
+          <form onSubmit={createEmployee} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input required placeholder="Name" className="border rounded px-3 py-2" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} />
+            <input required type="email" placeholder="Email" className="border rounded px-3 py-2" value={newEmployee.email} onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} />
+            <input required type="password" placeholder="Password" className="border rounded px-3 py-2" value={newEmployee.password} onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })} />
+            <input type="number" placeholder="Salary" className="border rounded px-3 py-2" value={newEmployee.salary || ''} onChange={(e) => setNewEmployee({ ...newEmployee, salary: Number(e.target.value) })} />
+            <input placeholder="Position" className="border rounded px-3 py-2" value={newEmployee.position || ''} onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })} />
+            <input type="number" min="16" max="100" placeholder="Age" className="border rounded px-3 py-2" value={newEmployee.age || ''} onChange={(e) => setNewEmployee({ ...newEmployee, age: Number(e.target.value) })} />
+            <select className="border rounded px-3 py-2" value={newEmployee.gender || ''} onChange={(e) => setNewEmployee({ ...newEmployee, gender: e.target.value })}>
+              <option value="">Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+            <input placeholder="Street" className="border rounded px-3 py-2" value={newEmployee.street || ''} onChange={(e) => setNewEmployee({ ...newEmployee, street: e.target.value })} />
+            <input placeholder="City" className="border rounded px-3 py-2" value={newEmployee.city || ''} onChange={(e) => setNewEmployee({ ...newEmployee, city: e.target.value })} />
+            <input placeholder="State" className="border rounded px-3 py-2" value={newEmployee.state || ''} onChange={(e) => setNewEmployee({ ...newEmployee, state: e.target.value })} />
+            <input placeholder="Zip Code" className="border rounded px-3 py-2" value={newEmployee.zipCode || ''} onChange={(e) => setNewEmployee({ ...newEmployee, zipCode: e.target.value })} />
+            <input placeholder="Country" className="border rounded px-3 py-2" value={newEmployee.country || ''} onChange={(e) => setNewEmployee({ ...newEmployee, country: e.target.value })} />
+            <input placeholder="Qualifications (comma separated)" className="md:col-span-3 border rounded px-3 py-2" value={newEmployee.qualifications || ''} onChange={(e) => setNewEmployee({ ...newEmployee, qualifications: e.target.value })} />
+            <button disabled={creating} className="md:col-span-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              {creating ? 'Creating...' : 'Create'}
+            </button>
+          </form>
+
+          <h3 className="mt-6 font-semibold text-gray-900 mb-2">Employees</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-600">
+                  <th className="py-2 pr-4">Name</th>
+                  <th className="py-2 pr-4">Email</th>
+                  <th className="py-2 pr-4">Status</th>
+                  <th className="py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map(emp => (
+                  <tr key={emp._id} className="border-t">
+                    <td className="py-2 pr-4">{emp.name}</td>
+                    <td className="py-2 pr-4">{emp.email}</td>
+                    <td className="py-2 pr-4">
+                      <span className={`px-2 py-0.5 rounded text-xs ${emp.isActive !== false ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {emp.isActive !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="py-2 space-x-2">
+                      <button onClick={() => startEdit(emp)} className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Update</button>
+                      <button onClick={() => deleteEmployee(emp._id)} className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+                {employees.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-4 text-center text-gray-500">No employees found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {editingEmployee && (
+            <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+                <h3 className="text-lg font-semibold mb-4">Update Employee</h3>
+                <form onSubmit={saveEdit} className="space-y-3">
+                  <input className="w-full border rounded px-3 py-2" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} placeholder="Name" />
+                  <input type="email" className="w-full border rounded px-3 py-2" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} placeholder="Email" />
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={editForm.isActive} onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })} />
+                    Active
+                  </label>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button type="button" onClick={() => setEditingEmployee(null)} className="px-4 py-2 rounded border">Cancel</button>
+                    <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Pending Leave Requests</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-600">
+                  <th className="py-2">Employee</th>
+                  <th className="py-2">Type</th>
+                  <th className="py-2">Dates</th>
+                  <th className="py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(leaves) && leaves.map(l => (
+                  <tr key={l._id} className="border-t">
+                    <td className="py-2">{l.employee?.name || 'N/A'}</td>
+                    <td className="py-2 capitalize">{l.type}</td>
+                    <td className="py-2">{new Date(l.startDate).toLocaleDateString()} - {new Date(l.endDate).toLocaleDateString()}</td>
+                    <td className="py-2 space-x-2">
+                      <button onClick={() => approveLeave(l._id)} className="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"><CheckCircle2 className="w-4 h-4 mr-1" />Approve</button>
+                      <button onClick={() => rejectLeave(l._id)} className="inline-flex items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"><XCircle className="w-4 h-4 mr-1" />Reject</button>
+                    </td>
+                  </tr>
+                ))}
+                {(!Array.isArray(leaves) || leaves.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="py-4 text-center text-gray-500">No pending leaves.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
       </div>
     </div>
