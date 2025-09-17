@@ -1,6 +1,7 @@
 import ClientContact from '../models/ClientContact.js';
 import Design from '../models/Design.js';
 import Notification from '../models/Notification.js';
+import { sendEmail } from '../config/email.js';
 
 // Create new client contact
 export const createClientContact = async (req, res) => {
@@ -46,6 +47,29 @@ export const createClientContact = async (req, res) => {
     });
 
     await notification.save();
+
+    // Send real email to designer using .env email configuration
+    try {
+      const subject = `New inquiry for ${design.projectName}`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; line-height:1.6;">
+          <h2>New Client Inquiry</h2>
+          <p>You have received a new inquiry for your design project <strong>${design.projectName}</strong>.</p>
+          <h3>Client Details</h3>
+          <ul>
+            <li><strong>Name:</strong> ${clientName}</li>
+            <li><strong>Email:</strong> ${clientEmail}</li>
+            <li><strong>Phone:</strong> ${clientPhone || 'N/A'}</li>
+          </ul>
+          <h3>Message</h3>
+          <p>${(message || '').replace(/\n/g, '<br/>')}</p>
+        </div>
+      `;
+      await sendEmail(design.contact, subject, html);
+    } catch (emailErr) {
+      console.warn('Email send failed (designer contact):', emailErr.message);
+      // Do not fail the request if email fails; notification already saved
+    }
 
     res.status(201).json({
       status: 'success',

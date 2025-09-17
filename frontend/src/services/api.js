@@ -72,7 +72,21 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   
   // Login user (using demo endpoint for development)
-  login: (credentials) => api.post('/demo/auth/login', credentials),
+  login: async (credentials) => {
+    try {
+      return await api.post('/demo/auth/login', credentials);
+    } catch (error) {
+      // If hybrid demo login rejects with 401, try designer direct login
+      if (error?.response?.status === 401) {
+        try {
+          return await api.post('/demo/auth/login-designer', credentials);
+        } catch (err2) {
+          throw err2;
+        }
+      }
+      throw error;
+    }
+  },
   
   // Logout user
   logout: () => api.post('/auth/logout'),

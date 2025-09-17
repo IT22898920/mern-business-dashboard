@@ -16,6 +16,7 @@ const DesignerDashboard = () => {
   });
   const [designs, setDesigns] = useState([]);
   const [clientContacts, setClientContacts] = useState([]);
+  const [clientSearch, setClientSearch] = useState('');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [imagePreview, setImagePreview] = useState('');
@@ -36,7 +37,11 @@ const DesignerDashboard = () => {
     try {
       const res = await fetch('http://localhost:5000/api/designs/all');
       const data = await res.json();
-      setDesigns(data);
+      const designerEmail = user?.email?.toLowerCase();
+      const ownDesigns = Array.isArray(data)
+        ? data.filter(d => (d?.contact || '').toLowerCase() === designerEmail)
+        : [];
+      setDesigns(ownDesigns);
     } catch (err) {
       console.error(err);
     } finally {
@@ -56,6 +61,79 @@ const DesignerDashboard = () => {
       console.error('Error fetching client contacts:', error);
     } finally {
       setIsLoadingClients(false);
+    }
+  };
+
+  const filteredClientContacts = clientContacts.filter((c) => {
+    if (!clientSearch) return true;
+    const q = clientSearch.toLowerCase();
+    return (
+      (c.clientName || '').toLowerCase().includes(q) ||
+      (c.clientEmail || '').toLowerCase().includes(q) ||
+      (c.projectName || '').toLowerCase().includes(q) ||
+      (c.message || '').toLowerCase().includes(q)
+    );
+  });
+
+  const exportClientsPDF = () => {
+    try {
+      const rows = filteredClientContacts
+        .map(c => `
+          <tr>
+            <td style="padding:8px;border:1px solid #e5e7eb;">${c.clientName || ''}</td>
+            <td style="padding:8px;border:1px solid #e5e7eb;">${c.clientEmail || ''}</td>
+            <td style="padding:8px;border:1px solid #e5e7eb;">${c.clientPhone || ''}</td>
+            <td style="padding:8px;border:1px solid #e5e7eb;">${c.projectName || ''}</td>
+            <td style="padding:8px;border:1px solid #e5e7eb;">${(c.message || '').replace(/</g,'&lt;')}</td>
+            <td style="padding:8px;border:1px solid #e5e7eb;">${new Date(c.createdAt).toLocaleDateString()}</td>
+          </tr>
+        `)
+        .join('');
+
+      const html = `
+        <html>
+          <head>
+            <title>Client Contacts</title>
+            <meta charset="utf-8" />
+            <style>
+              body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Noto Sans',sans-serif; color:#111827; }
+              h1 { font-size: 20px; }
+              table { width:100%; border-collapse: collapse; }
+              thead th { text-align:left; background:#f9fafb; border:1px solid #e5e7eb; padding:8px; font-size:12px; }
+              td { font-size:12px; }
+            </style>
+          </head>
+          <body>
+            <h1>Client Contacts - ${user?.name || 'Designer'}</h1>
+            <p>Generated: ${new Date().toLocaleString()}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Project</th>
+                  <th>Message</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      w.print();
+    } catch (err) {
+      console.error('PDF export failed:', err);
+      alert('Failed to export PDF');
     }
   };
 
@@ -101,7 +179,12 @@ const DesignerDashboard = () => {
   // Add Project Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    // Force contact to current user's email to keep ownership correct
+    const next = { ...formData, [name]: value };
+    if (user?.email) {
+      next.contact = user.email;
+    }
+    setFormData(next);
 
     if (name === 'imageURL') {
       setImageError('');
@@ -128,17 +211,28 @@ const DesignerDashboard = () => {
     
     setIsSubmitting(true);
     try {
+      const payload = {
+        projectName: formData.projectName,
+        clientName: formData.clientName,
+        contact: user?.email || formData.contact,
+        status: formData.status,
+        imageURL: formData.imageURL
+      };
       const res = await fetch('http://localhost:5000/api/designs/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
       });
       const result = await res.json();
       alert(result.message || 'Project added successfully!');
       setFormData({
         projectName: '',
         clientName: '',
-        contact: '',
+        contact: user?.email || '',
         status: 'In Progress',
         imageURL: ''
       });
@@ -186,7 +280,11 @@ const DesignerDashboard = () => {
     try {
       const res = await fetch(`http://localhost:5000/api/designs/update/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        credentials: 'include',
         body: JSON.stringify(editFormData)
       });
       const result = await res.json();
@@ -202,7 +300,13 @@ const DesignerDashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this project?')) return;
     try {
-      await fetch(`http://localhost:5000/api/designs/delete/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:5000/api/designs/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        credentials: 'include'
+      });
       fetchDesigns();
     } catch (err) {
       console.error(err);
@@ -501,15 +605,13 @@ const DesignerDashboard = () => {
                   </div>
                   
                   <div className="group">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Contact Info</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Your Email (owner)</label>
                     <input 
-                      type="text" 
+                      type="email" 
                       name="contact" 
-                      value={formData.contact} 
-                      onChange={handleChange} 
-                      placeholder="Enter contact information" 
-                      required 
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all duration-300 group-hover:border-gray-300" 
+                      value={user?.email || formData.contact} 
+                      readOnly 
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600"
                     />
                   </div>
                   
@@ -748,12 +850,28 @@ const DesignerDashboard = () => {
           {/* Clients Tab */}
           {activeTab === 'clients' && (
             <div className="animate-in fade-in duration-700">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                  Client Inquiries
-                </h2>
-                <p className="text-gray-600">Manage your client contacts and inquiries</p>
-                <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
+              <div className="mb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">
+                    Client Inquiries
+                  </h2>
+                  <p className="text-gray-600">Manage your client contacts and inquiries</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={clientSearch}
+                    onChange={(e) => setClientSearch(e.target.value)}
+                    placeholder="Search by client, email, project..."
+                    className="w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                  <button
+                    onClick={exportClientsPDF}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Export PDF
+                  </button>
+                </div>
               </div>
 
               {isLoadingClients ? (
@@ -763,7 +881,7 @@ const DesignerDashboard = () => {
                     <p className="text-gray-600">Loading client inquiries...</p>
                   </div>
                 </div>
-              ) : clientContacts.length === 0 ? (
+              ) : filteredClientContacts.length === 0 ? (
                 <div className="text-center py-20">
                   <div className="bg-white rounded-2xl p-12 shadow-xl">
                     <div className="w-24 h-24 bg-gradient-to-r from-purple-100 to-blue-100 rounded-full mx-auto mb-6 flex items-center justify-center">
@@ -789,7 +907,7 @@ const DesignerDashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {clientContacts.map((contact, index) => (
+                        {filteredClientContacts.map((contact, index) => (
                           <tr key={contact._id} className="hover:bg-gray-50 transition-colors duration-200">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">

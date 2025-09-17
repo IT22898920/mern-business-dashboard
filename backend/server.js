@@ -96,6 +96,7 @@ import notificationRoutes from './routes/notificationRoutes.js'; // Notification
 import reorderRoutes from './routes/reorders.js';
 import leaveRoutes from './routes/leaveRoutes.js';
 import reportRoutes from './routes/reportRoutes.js'; // PDF Reports
+import interiorDesignerRoutes from './routes/interiorDesignerRoutes.js'; // Interior Designers
 
 
 // ------------------------
@@ -127,6 +128,9 @@ app.use('/api/notifications', requireDb, notificationRoutes);
 
 // Reports routes
 app.use('/api/reports', requireDb, reportRoutes);
+
+// Interior Designer routes
+app.use('/api/interior-designers', requireDb, interiorDesignerRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

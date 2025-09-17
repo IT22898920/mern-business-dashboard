@@ -18,6 +18,56 @@ const demoUsers = [
   }
 ];
 
+// Demo interior designers for testing
+const demoDesigners = [
+  {
+    _id: 'demo_designer_1',
+    name: 'Sarah Johnson',
+    email: 'sarah.johnson@example.com',
+    address: {
+      street: '123 Design Street',
+      city: 'Colombo',
+      state: 'Western Province',
+      zipCode: '00100',
+      country: 'Sri Lanka'
+    },
+    experience: 5,
+    age: 28,
+    phone: '+94 77 123 4567',
+    specialization: ['Modern', 'Contemporary', 'Minimalist'],
+    bio: 'Passionate interior designer with 5 years of experience creating beautiful spaces.',
+    hourlyRate: 2500,
+    languages: ['English', 'Sinhala'],
+    isActive: true,
+    isVerified: true,
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date('2024-01-15')
+  },
+  {
+    _id: 'demo_designer_2',
+    name: 'Michael Chen',
+    email: 'michael.chen@example.com',
+    address: {
+      street: '456 Creative Lane',
+      city: 'Kandy',
+      state: 'Central Province',
+      zipCode: '20000',
+      country: 'Sri Lanka'
+    },
+    experience: 8,
+    age: 32,
+    phone: '+94 77 234 5678',
+    specialization: ['Traditional', 'Classic', 'Luxury'],
+    bio: 'Experienced designer specializing in luxury residential and commercial spaces.',
+    hourlyRate: 3500,
+    languages: ['English', 'Tamil'],
+    isActive: true,
+    isVerified: true,
+    createdAt: new Date('2024-02-01'),
+    updatedAt: new Date('2024-02-01')
+  }
+];
+
 // Demo categories for testing
 const demoCategories = [
   {
@@ -274,6 +324,255 @@ export const demoDeleteCategory = (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Server error deleting category'
+    });
+  }
+};
+
+// ===== DEMO INTERIOR DESIGNER FUNCTIONS =====
+
+export const demoGetDesignerStats = (req, res) => {
+  try {
+    const total = demoDesigners.length;
+    const active = demoDesigners.filter(d => d.isActive).length;
+    const verified = demoDesigners.filter(d => d.isVerified).length;
+    const newThisMonth = demoDesigners.filter(d => {
+      const createdDate = new Date(d.createdAt);
+      const currentDate = new Date();
+      return createdDate.getMonth() === currentDate.getMonth() && 
+             createdDate.getFullYear() === currentDate.getFullYear();
+    }).length;
+    
+    const avgExperience = Math.round(
+      demoDesigners.reduce((sum, d) => sum + d.experience, 0) / demoDesigners.length
+    );
+
+    res.json({
+      success: true,
+      data: {
+        total,
+        active,
+        verified,
+        newThisMonth,
+        averageExperience: avgExperience
+      }
+    });
+  } catch (error) {
+    console.error('Demo get designer stats error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error fetching designer statistics'
+    });
+  }
+};
+
+export const demoGetDesigners = (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (id) {
+      // Get single designer
+      const designer = demoDesigners.find(d => d._id === id);
+      if (!designer) {
+        return res.status(404).json({
+          success: false,
+          message: 'Designer not found'
+        });
+      }
+      return res.json({
+        success: true,
+        data: designer
+      });
+    }
+
+    // Get all designers with pagination and filters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const filter = req.query.filter || 'all';
+
+    let filteredDesigners = [...demoDesigners];
+
+    // Apply search filter
+    if (search) {
+      filteredDesigners = filteredDesigners.filter(d => 
+        d.name.toLowerCase().includes(search.toLowerCase()) ||
+        d.email.toLowerCase().includes(search.toLowerCase()) ||
+        d.address.city.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (filter === 'active') {
+      filteredDesigners = filteredDesigners.filter(d => d.isActive);
+    } else if (filter === 'inactive') {
+      filteredDesigners = filteredDesigners.filter(d => !d.isActive);
+    } else if (filter === 'verified') {
+      filteredDesigners = filteredDesigners.filter(d => d.isVerified);
+    }
+
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedDesigners = filteredDesigners.slice(startIndex, endIndex);
+
+    res.json({
+      success: true,
+      data: {
+        designers: paginatedDesigners,
+        pagination: {
+          current: page,
+          pages: Math.ceil(filteredDesigners.length / limit),
+          total: filteredDesigners.length
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Demo get designers error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error fetching designers'
+    });
+  }
+};
+
+export const demoCreateDesigner = (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      address,
+      experience,
+      age,
+      phone,
+      specialization,
+      bio,
+      hourlyRate,
+      languages
+    } = req.body;
+
+    // Check if designer already exists
+    const existingDesigner = demoDesigners.find(d => d.email === email);
+    if (existingDesigner) {
+      return res.status(400).json({
+        success: false,
+        message: 'Designer with this email already exists'
+      });
+    }
+
+    // Create new designer
+    const newDesigner = {
+      _id: `demo_designer_${Date.now()}`,
+      name,
+      email,
+      address: {
+        street: address.street || '',
+        city: address.city || '',
+        state: address.state || '',
+        zipCode: address.zipCode || '',
+        country: address.country || 'Sri Lanka'
+      },
+      experience: parseInt(experience),
+      age: parseInt(age),
+      phone: phone || '',
+      specialization: specialization || [],
+      bio: bio || '',
+      hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+      languages: languages || [],
+      isActive: true,
+      isVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    demoDesigners.push(newDesigner);
+
+    res.status(201).json({
+      success: true,
+      message: 'Designer created successfully',
+      data: newDesigner
+    });
+  } catch (error) {
+    console.error('Demo create designer error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error creating designer'
+    });
+  }
+};
+
+export const demoUpdateDesigner = (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const designerIndex = demoDesigners.findIndex(d => d._id === id);
+    if (designerIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Designer not found'
+      });
+    }
+
+    // Handle toggle status
+    if (req.route.path.includes('toggle-status')) {
+      demoDesigners[designerIndex].isActive = !demoDesigners[designerIndex].isActive;
+      demoDesigners[designerIndex].updatedAt = new Date();
+      
+      return res.json({
+        success: true,
+        message: `Designer ${demoDesigners[designerIndex].isActive ? 'activated' : 'deactivated'} successfully`,
+        data: demoDesigners[designerIndex]
+      });
+    }
+
+    // Update designer data
+    const designer = demoDesigners[designerIndex];
+    Object.keys(updateData).forEach(key => {
+      if (key === 'address' && typeof updateData[key] === 'object') {
+        designer.address = { ...designer.address, ...updateData[key] };
+      } else if (key !== '_id' && key !== 'createdAt') {
+        designer[key] = updateData[key];
+      }
+    });
+    designer.updatedAt = new Date();
+
+    res.json({
+      success: true,
+      message: 'Designer updated successfully',
+      data: designer
+    });
+  } catch (error) {
+    console.error('Demo update designer error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error updating designer'
+    });
+  }
+};
+
+export const demoDeleteDesigner = (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const designerIndex = demoDesigners.findIndex(d => d._id === id);
+    if (designerIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Designer not found'
+      });
+    }
+
+    demoDesigners.splice(designerIndex, 1);
+
+    res.status(200).json({
+      success: true,
+      message: 'Designer deleted successfully'
+    });
+  } catch (error) {
+    console.error('Demo delete designer error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error deleting designer'
     });
   }
 };

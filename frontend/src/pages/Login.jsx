@@ -97,13 +97,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Floating Orbs */}
-        <div className="absolute -top-10 -left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute -top-10 -right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute -bottom-10 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+        <div className="absolute -top-10 -left-10 w-72 h-72 bg-amber-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -top-10 -right-10 w-72 h-72 bg-orange-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-10 left-20 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
         
         {/* Grid Pattern */}
         <div 
@@ -117,10 +117,10 @@ const Login = () => {
         <div className="absolute top-20 left-20 text-gray-300/20 animate-float">
           <Shield className="w-8 h-8" />
         </div>
-        <div className="absolute top-32 right-32 text-blue-300/20 animate-float animation-delay-1000">
+        <div className="absolute top-32 right-32 text-amber-300/20 animate-float animation-delay-1000">
           <Sparkles className="w-6 h-6" />
         </div>
-        <div className="absolute bottom-32 left-32 text-purple-300/20 animate-float animation-delay-2000">
+        <div className="absolute bottom-32 left-32 text-orange-300/20 animate-float animation-delay-2000">
           <Zap className="w-7 h-7" />
         </div>
       </div>
@@ -135,24 +135,24 @@ const Login = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl transform rotate-6 scale-105 opacity-20 blur-sm"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl transform -rotate-6 scale-105 opacity-20 blur-sm"></div>
-                <div className="relative h-16 w-16 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 rounded-xl flex items-center justify-center shadow-2xl transform transition-transform duration-300 hover:scale-110 hover:rotate-12">
+              <div className="relative h-16 w-16 bg-gradient-to-br from-amber-500 via-orange-600 to-yellow-500 rounded-xl flex items-center justify-center shadow-2xl transform transition-transform duration-300 hover:scale-110 hover:rotate-12">
                   <LogIn className="h-8 w-8 text-white" />
                   <div className="absolute inset-0 bg-white/20 rounded-xl animate-pulse"></div>
                 </div>
               </div>
             </div>
             
-            <h2 className="mt-8 text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-blue-600 to-purple-600 animate-fade-in">
+            <h2 className="mt-8 text-4xl font-extrabold text-black animate-fade-in">
               Welcome Back
             </h2>
-            <p className="mt-3 text-lg text-gray-600 animate-slide-in">
+            <p className="mt-3 text-lg text-gray-700 animate-slide-in">
               Sign in to your account and continue your journey
             </p>
             <p className="mt-2 text-sm text-gray-500">
               Or{' '}
               <Link
                 to="/register"
-                className="font-medium text-blue-600 hover:text-blue-800 transition-all duration-300 hover:underline underline-offset-4"
+                className="font-medium text-black hover:text-amber-600 transition-all duration-300 hover:underline underline-offset-4"
               >
                 create a new account
               </Link>
@@ -182,11 +182,11 @@ const Login = () => {
                     onChange={handleInputChange}
                     error={errors.email}
                     placeholder="Enter your email address"
-                    leftIcon={<Mail className="h-5 w-5 group-hover:text-blue-400 transition-colors" />}
+                    leftIcon={<Mail className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                     required
                     disabled={isLoading}
                     autoComplete="email"
-                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-blue-400 transition-all duration-300 hover:bg-white/60"
+                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                     containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                   />
                 </div>
@@ -201,12 +201,12 @@ const Login = () => {
                     onChange={handleInputChange}
                     error={errors.password}
                     placeholder="Enter your password"
-                    leftIcon={<Lock className="h-5 w-5 group-hover:text-purple-400 transition-colors" />}
+                    leftIcon={<Lock className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                     showPasswordToggle
                     required
                     disabled={isLoading}
                     autoComplete="current-password"
-                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-purple-400 transition-all duration-300 hover:bg-white/60"
+                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                     containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                   />
                 </div>
@@ -250,7 +250,7 @@ const Login = () => {
                 <div className="text-sm">
                   <Link
                     to="/forgot-password"
-                    className="font-medium text-blue-600 hover:text-blue-800 transition-all duration-300 hover:underline underline-offset-4 transform hover:scale-105 inline-block"
+                    className="font-medium text-black hover:text-amber-600 transition-all duration-300 hover:underline underline-offset-4 transform hover:scale-105 inline-block"
                   >
                     Forgot password?
                   </Link>
@@ -259,12 +259,12 @@ const Login = () => {
 
               {/* 3D Animated Submit Button */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl transform scale-105 opacity-20 blur-sm animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl transform scale-105 opacity-20 blur-sm animate-pulse"></div>
                 <Button
                   type="submit"
                   variant="primary"
                   size="lg"
-                  className="w-full relative z-10 bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 hover:from-blue-600 hover:via-purple-700 hover:to-pink-600 border-0 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-3xl text-white font-semibold"
+                  className="w-full relative z-10 bg-black hover:bg-gray-800 border-0 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-3xl text-white font-semibold"
                   loading={isLoading}
                   disabled={isLoading}
                 >
@@ -288,7 +288,7 @@ const Login = () => {
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-gradient-to-r from-transparent via-gray-50 to-transparent text-gray-600">
+                  <span className="px-4 bg-gradient-to-r from-transparent via-amber-50 to-transparent text-gray-700">
                     New to our platform?
                   </span>
                 </div>
@@ -298,11 +298,11 @@ const Login = () => {
               <div className="text-center">
                 <Link
                   to="/register"
-                  className="group relative w-full inline-flex justify-center py-3 px-6 border border-gray-200 rounded-xl shadow-lg bg-white/80 text-sm font-medium text-gray-700 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-2xl backdrop-blur-sm"
+                  className="group relative w-full inline-flex justify-center py-3 px-6 border border-gray-200 rounded-xl shadow-lg bg-white/80 text-sm font-medium text-gray-700 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-2xl backdrop-blur-sm"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-100/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="relative flex items-center">
-                    <Sparkles className="w-4 h-4 mr-2 group-hover:animate-spin text-blue-500" />
+                    <Sparkles className="w-4 h-4 mr-2 group-hover:animate-spin text-amber-500" />
                     Create new account
                   </span>
                 </Link>
