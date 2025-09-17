@@ -3,12 +3,18 @@ import Design from '../models/Design.js';
 // Add new design
 export const addDesign = async (req, res) => {
   try {
-    const { projectName, clientName, contact, status, description, imageURL } = req.body;
+    const { projectName, clientName, status, description, imageURL } = req.body;
+
+    // Owner email comes from authenticated user; fallback to provided contact only if present
+    const ownerEmail = (req.user?.profile?.email || req.user?.email || '').toLowerCase();
+    if (!ownerEmail) {
+      return res.status(400).json({ message: 'Owner email not available' });
+    }
 
     const newDesign = new Design({
       projectName,
       clientName,
-      contact,
+      contact: ownerEmail,
       status,
       description,
       imageURL
@@ -26,6 +32,21 @@ export const addDesign = async (req, res) => {
 export const getAllDesigns = async (req, res) => {
   try {
     const designs = await Design.find().sort({ createdAt: -1 });
+    res.json(designs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get designs owned by current authenticated designer
+export const getMyDesigns = async (req, res) => {
+  try {
+    const ownerEmail = (req.user?.profile?.email || req.user?.email || '').toLowerCase();
+    if (!ownerEmail) {
+      return res.status(400).json({ message: 'Owner email not available' });
+    }
+    const designs = await Design.find({ contact: ownerEmail }).sort({ createdAt: -1 });
     res.json(designs);
   } catch (error) {
     console.error(error);

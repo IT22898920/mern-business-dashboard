@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Calendar, User, MapPin, MessageCircle, Star, Lock } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { getDesignById } from '../services/designService';
+import designService from '../services/designService';
 import { createClientContact } from '../services/clientContactService';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -27,7 +27,7 @@ const DesignDetail = () => {
     const fetchDesign = async () => {
       try {
         setLoading(true);
-        const designData = await getDesignById(id);
+        const designData = await designService.getDesignById(id);
         setDesign(designData);
       } catch (err) {
         setError('Failed to load design details');
@@ -118,10 +118,10 @@ ${contactForm.name}`;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         <Navbar />
         <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
         </div>
         <Footer />
       </div>
@@ -130,15 +130,15 @@ ${contactForm.name}`;
 
   if (error || !design) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         <Navbar />
         <div className="flex justify-center items-center min-h-screen">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Design Not Found</h2>
+            <h2 className="text-2xl font-bold text-black mb-4">Design Not Found</h2>
             <p className="text-gray-600 mb-8">The design you're looking for doesn't exist or has been removed.</p>
             <button
               onClick={() => navigate('/home')}
-              className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+              className="bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 hover:shadow-lg transform hover:scale-105 transition-all duration-300"
             >
               Back to Home
             </button>
@@ -157,7 +157,7 @@ ${contactForm.name}`;
         {/* Back Button */}
         <button
           onClick={() => navigate('/home')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 transition-colors duration-300 mb-6"
+          className="flex items-center space-x-2 text-gray-600 hover:text-amber-600 transition-colors duration-300 mb-6"
         >
           <ArrowLeft className="h-5 w-5" />
           <span>Back to Home</span>
@@ -206,7 +206,7 @@ ${contactForm.name}`;
           {/* Design Details */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">
+              <h1 className="text-3xl lg:text-4xl font-bold text-black mb-4">
                 {design.projectName}
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
@@ -216,8 +216,8 @@ ${contactForm.name}`;
 
             {/* Designer Contact Info */}
             <div className="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
-                <MessageCircle className="h-5 w-5 text-purple-600" />
+              <h3 className="text-xl font-bold text-black mb-4 flex items-center space-x-2">
+                <MessageCircle className="h-5 w-5 text-amber-600" />
                 <span>Contact Designer</span>
                 {!isAuthenticated && (
                   <span className="text-sm text-gray-500 font-normal">(Login Required)</span>
@@ -237,13 +237,13 @@ ${contactForm.name}`;
 
               {!isAuthenticated ? (
                 <div className="text-center py-6">
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-200">
                     <div className="flex justify-center mb-4">
-                      <div className="bg-purple-100 rounded-full p-3">
-                        <Lock className="h-6 w-6 text-purple-600" />
+                      <div className="bg-amber-100 rounded-full p-3">
+                        <Lock className="h-6 w-6 text-black" />
                       </div>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h4 className="text-lg font-semibold text-black mb-2">
                       Login Required to Contact Designer
                     </h4>
                     <p className="text-gray-600 mb-4">
@@ -252,14 +252,14 @@ ${contactForm.name}`;
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       <button
                         onClick={() => navigate('/login')}
-                        className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-2 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                        className="bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
                       >
                         <Lock className="h-4 w-4" />
                         <span>Login</span>
                       </button>
                       <button
                         onClick={() => navigate('/register')}
-                        className="border-2 border-purple-600 text-purple-600 py-2 px-4 rounded-lg font-semibold hover:bg-purple-50 transition-all duration-300 flex items-center justify-center space-x-2"
+                        className="border-2 border-black text-black py-2 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300 flex items-center justify-center space-x-2"
                       >
                         <User className="h-4 w-4" />
                         <span>Register</span>
@@ -270,7 +270,7 @@ ${contactForm.name}`;
               ) : !showContactForm ? (
                 <button
                   onClick={handleContactClick}
-                  className="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                  className="w-full bg-black text-white py-3 px-6 rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
                 >
                   <MessageCircle className="h-5 w-5" />
                   <span>Contact Designer</span>
@@ -287,7 +287,7 @@ ${contactForm.name}`;
                       value={contactForm.name}
                       onChange={handleContactFormChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       placeholder="Enter your name"
                     />
                   </div>
@@ -302,7 +302,7 @@ ${contactForm.name}`;
                       value={contactForm.email}
                       onChange={handleContactFormChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       placeholder="Enter your email"
                     />
                   </div>
@@ -316,7 +316,7 @@ ${contactForm.name}`;
                       name="phone"
                       value={contactForm.phone}
                       onChange={handleContactFormChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       placeholder="Enter your phone number"
                     />
                   </div>
@@ -331,7 +331,7 @@ ${contactForm.name}`;
                       onChange={handleContactFormChange}
                       required
                       rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       placeholder="Tell the designer about your project requirements..."
                     />
                   </div>
@@ -339,7 +339,7 @@ ${contactForm.name}`;
                   <div className="flex space-x-3">
                     <button
                       type="submit"
-                      className="flex-1 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                      className="flex-1 bg-black text-white py-3 px-6 rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg transform hover:scale-105 transition-all duration-300"
                     >
                       Send Message
                     </button>
@@ -357,13 +357,13 @@ ${contactForm.name}`;
 
             {/* Quick Contact Options */}
             <div className="bg-white p-6 rounded-2xl shadow-lg">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Contact</h3>
+              <h3 className="text-xl font-bold text-black mb-4">Quick Contact</h3>
               <div className="space-y-3">
                 <a
                   href={`mailto:${design.contact}?subject=Inquiry about ${design.projectName}`}
                   className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300"
                 >
-                  <Mail className="h-5 w-5 text-purple-600" />
+                  <Mail className="h-5 w-5 text-amber-600" />
                   <span className="text-gray-700">Send Email</span>
                 </a>
                 
@@ -379,7 +379,7 @@ ${contactForm.name}`;
                   }}
                   className="w-full flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-300"
                 >
-                  <User className="h-5 w-5 text-blue-600" />
+                  <User className="h-5 w-5 text-amber-600" />
                   <span className="text-gray-700">Copy Email Address</span>
                 </button>
               </div>

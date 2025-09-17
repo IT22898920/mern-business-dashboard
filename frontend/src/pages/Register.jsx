@@ -146,14 +146,14 @@ const Register = () => {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Floating Orbs */}
-        <div className="absolute -top-10 -left-10 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute -top-10 -right-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute -bottom-10 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
-        <div className="absolute top-1/2 right-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-3000"></div>
+        <div className="absolute -top-10 -left-10 w-72 h-72 bg-amber-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+        <div className="absolute -top-10 -right-10 w-72 h-72 bg-orange-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-10 left-20 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+        <div className="absolute top-1/2 right-20 w-72 h-72 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-3000"></div>
         
         {/* Grid Pattern */}
         <div 
@@ -167,13 +167,13 @@ const Register = () => {
         <div className="absolute top-20 left-20 text-gray-300/20 animate-float">
           <Shield className="w-8 h-8" />
         </div>
-        <div className="absolute top-32 right-32 text-green-300/20 animate-float animation-delay-1000">
+        <div className="absolute top-32 right-32 text-amber-300/20 animate-float animation-delay-1000">
           <Sparkles className="w-6 h-6" />
         </div>
-        <div className="absolute bottom-32 left-32 text-blue-300/20 animate-float animation-delay-2000">
+        <div className="absolute bottom-32 left-32 text-orange-300/20 animate-float animation-delay-2000">
           <Zap className="w-7 h-7" />
         </div>
-        <div className="absolute top-1/3 left-1/2 text-purple-300/20 animate-float animation-delay-3000">
+        <div className="absolute top-1/3 left-1/2 text-yellow-300/20 animate-float animation-delay-3000">
           <UserPlus className="w-6 h-6" />
         </div>
       </div>
@@ -186,26 +186,26 @@ const Register = () => {
             <div className={`mx-auto relative transition-all duration-700 ${isFormFocused ? 'transform scale-110 rotate-3' : ''}`}>
               {/* 3D Icon Container */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl transform rotate-6 scale-105 opacity-20 blur-sm"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl transform -rotate-6 scale-105 opacity-20 blur-sm"></div>
-                <div className="relative h-16 w-16 bg-gradient-to-br from-green-500 via-blue-600 to-purple-500 rounded-xl flex items-center justify-center shadow-2xl transform transition-transform duration-300 hover:scale-110 hover:rotate-12">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl transform rotate-6 scale-105 opacity-20 blur-sm"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-yellow-600 rounded-xl transform -rotate-6 scale-105 opacity-20 blur-sm"></div>
+                <div className="relative h-16 w-16 bg-gradient-to-br from-amber-500 via-orange-600 to-yellow-500 rounded-xl flex items-center justify-center shadow-2xl transform transition-transform duration-300 hover:scale-110 hover:rotate-12">
                   <UserPlus className="h-8 w-8 text-white" />
                   <div className="absolute inset-0 bg-white/20 rounded-xl animate-pulse"></div>
                 </div>
               </div>
             </div>
             
-            <h2 className="mt-8 text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-green-600 to-blue-600 animate-fade-in">
+            <h2 className="mt-8 text-4xl font-extrabold text-black animate-fade-in">
               Join Our Platform
             </h2>
-            <p className="mt-3 text-lg text-gray-600 animate-slide-in">
+            <p className="mt-3 text-lg text-gray-700 animate-slide-in">
               Create your account and start your journey with us
             </p>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-600">
               Already have an account?{' '}
               <Link
                 to="/login"
-                className="font-medium text-blue-600 hover:text-blue-800 transition-all duration-300 hover:underline underline-offset-4"
+                className="font-medium text-black hover:text-amber-600 transition-all duration-300 hover:underline underline-offset-4"
               >
                 Sign in here
               </Link>
@@ -234,11 +234,11 @@ const Register = () => {
                     onChange={handleInputChange}
                     error={errors.firstName}
                     placeholder="Enter your first name"
-                    leftIcon={<User className="h-5 w-5 group-hover:text-green-400 transition-colors" />}
+                    leftIcon={<User className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                     required
                     disabled={isLoading}
                     autoComplete="given-name"
-                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-green-400 transition-all duration-300 hover:bg-white/60"
+                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                     containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                   />
                 </div>
@@ -253,11 +253,11 @@ const Register = () => {
                     onChange={handleInputChange}
                     error={errors.lastName}
                     placeholder="Enter your last name"
-                    leftIcon={<User className="h-5 w-5 group-hover:text-blue-400 transition-colors" />}
+                    leftIcon={<User className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                     required
                     disabled={isLoading}
                     autoComplete="family-name"
-                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-blue-400 transition-all duration-300 hover:bg-white/60"
+                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                     containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                   />
                 </div>
@@ -273,11 +273,11 @@ const Register = () => {
                   onChange={handleInputChange}
                   error={errors.email}
                   placeholder="Enter your email address"
-                  leftIcon={<Mail className="h-5 w-5 group-hover:text-purple-400 transition-colors" />}
+                  leftIcon={<Mail className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                   required
                   disabled={isLoading}
                   autoComplete="email"
-                  className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-purple-400 transition-all duration-300 hover:bg-white/60"
+                  className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                   containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                 />
               </div>
@@ -293,11 +293,11 @@ const Register = () => {
                     onChange={handleInputChange}
                     error={errors.phone}
                     placeholder="Enter your phone number"
-                    leftIcon={<Phone className="h-5 w-5 group-hover:text-green-400 transition-colors" />}
+                    leftIcon={<Phone className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                     required
                     disabled={isLoading}
                     autoComplete="tel"
-                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-green-400 transition-all duration-300 hover:bg-white/60"
+                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                     containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                   />
                 </div>
@@ -314,7 +314,7 @@ const Register = () => {
                       value={formData.role}
                       onChange={handleInputChange}
                       disabled={isLoading}
-                      className="form-input bg-white/50 border-gray-200/50 text-gray-800 focus:bg-white/70 focus:border-blue-400 transition-all duration-300 hover:bg-white/60 pl-10"
+                      className="form-input bg-white/50 border-gray-200/50 text-gray-800 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60 pl-10"
                     >
                       {roleOptions.map(option => (
                         <option key={option.value} value={option.value}>
@@ -323,7 +323,7 @@ const Register = () => {
                       ))}
                     </select>
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-secondary-400 group-hover:text-blue-400 transition-colors" />
+                      <User className="h-5 w-5 text-secondary-400 group-hover:text-amber-400 transition-colors" />
                     </div>
                   </div>
                 </div>
@@ -339,11 +339,11 @@ const Register = () => {
                   onChange={handleInputChange}
                   error={errors.address}
                   placeholder="Enter your full address"
-                  leftIcon={<MapPin className="h-5 w-5 group-hover:text-blue-400 transition-colors" />}
+                  leftIcon={<MapPin className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                   required
                   disabled={isLoading}
                   autoComplete="address-line1"
-                  className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-blue-400 transition-all duration-300 hover:bg-white/60"
+                  className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                   containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                 />
               </div>
@@ -359,12 +359,12 @@ const Register = () => {
                     onChange={handleInputChange}
                     error={errors.password}
                     placeholder="Create a strong password"
-                    leftIcon={<Lock className="h-5 w-5 group-hover:text-purple-400 transition-colors" />}
+                    leftIcon={<Lock className="h-5 w-5 group-hover:text-amber-400 transition-colors" />}
                     showPasswordToggle
                     required
                     disabled={isLoading}
                     autoComplete="new-password"
-                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-purple-400 transition-all duration-300 hover:bg-white/60"
+                    className="bg-white/50 border-gray-200/50 text-gray-800 placeholder-gray-500 focus:bg-white/70 focus:border-amber-400 transition-all duration-300 hover:bg-white/60"
                     containerClassName="transform transition-all duration-300 hover:scale-105 hover:-translate-y-1"
                   />
                 </div>
@@ -400,7 +400,7 @@ const Register = () => {
                     checked={formData.agreeToTerms}
                     onChange={handleInputChange}
                     disabled={isLoading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded bg-white/70 transition-all duration-300 hover:scale-110"
+                    className="h-4 w-4 text-black focus:ring-amber-500 border-gray-300 rounded bg-white/70 transition-all duration-300 hover:scale-110"
                   />
                 </div>
                 <div className="ml-3 text-sm">
@@ -408,14 +408,14 @@ const Register = () => {
                     I agree to the{' '}
                     <Link
                       to="/terms"
-                      className="font-medium text-blue-600 hover:text-blue-800 transition-all duration-300 hover:underline underline-offset-4"
+                      className="font-medium text-black hover:text-amber-600 transition-all duration-300 hover:underline underline-offset-4"
                     >
                       Terms and Conditions
                     </Link>
                     {' '}and{' '}
                     <Link
                       to="/privacy"
-                      className="font-medium text-blue-600 hover:text-blue-800 transition-all duration-300 hover:underline underline-offset-4"
+                      className="font-medium text-black hover:text-amber-600 transition-all duration-300 hover:underline underline-offset-4"
                     >
                       Privacy Policy
                     </Link>
@@ -449,12 +449,12 @@ const Register = () => {
 
               {/* 3D Animated Submit Button */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl transform scale-105 opacity-20 blur-sm animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl transform scale-105 opacity-20 blur-sm animate-pulse"></div>
                 <Button
                   type="submit"
                   variant="primary"
                   size="lg"
-                  className="w-full relative z-10 bg-gradient-to-r from-green-500 via-blue-600 to-purple-500 hover:from-green-600 hover:via-blue-700 hover:to-purple-600 border-0 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-3xl text-white font-semibold"
+                  className="w-full relative z-10 bg-black hover:bg-gray-800 border-0 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-3xl text-white font-semibold"
                   loading={isLoading}
                   disabled={isLoading}
                 >
@@ -488,11 +488,11 @@ const Register = () => {
               <div className="text-center">
                 <Link
                   to="/login"
-                  className="group relative w-full inline-flex justify-center py-3 px-6 border border-gray-200 rounded-xl shadow-lg bg-white/80 text-sm font-medium text-gray-700 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-2xl backdrop-blur-sm"
+                  className="group relative w-full inline-flex justify-center py-3 px-6 border border-gray-200 rounded-xl shadow-lg bg-white/80 text-sm font-medium text-gray-700 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-2xl backdrop-blur-sm"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-100/20 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="relative flex items-center">
-                    <Sparkles className="w-4 h-4 mr-2 group-hover:animate-spin text-blue-500" />
+                    <Sparkles className="w-4 h-4 mr-2 group-hover:animate-spin text-black" />
                     Sign in to existing account
                   </span>
                 </Link>

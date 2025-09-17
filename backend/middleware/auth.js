@@ -1,5 +1,6 @@
 import { verifyToken } from '../utils/jwt.js';
 import User from '../models/User.js';
+import InteriorDesigner from '../models/InteriorDesigner.js';
 import mongoose from 'mongoose';
 
 // Protect routes - check if user is authenticated
@@ -32,39 +33,62 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Check if user still exists
-    let user = null;
-    
-    // Only try to find user if userId is a valid ObjectId
+    // Resolve principal (User or InteriorDesigner)
+    let principal = null;
+
     if (mongoose.isValidObjectId(decoded.userId)) {
-      user = await User.findById(decoded.userId);
+      // Try regular User first
+      principal = await User.findById(decoded.userId);
+
+      // If not found and role indicates interior designer, try InteriorDesigner model
+      if (!principal && decoded.role === 'interior_designer') {
+        const designer = await InteriorDesigner.findById(decoded.userId);
+        if (designer && designer.isActive) {
+          const defaultAvatarUrl = 'https://res.cloudinary.com/dxkufsejm/image/upload/v1625661662/avatars/default_avatar.png';
+          // Normalize to include profile similar to User.profile
+          principal = {
+            ...designer.toObject(),
+            role: 'interior_designer',
+            profile: {
+              _id: designer._id,
+              name: designer.name,
+              email: designer.email,
+              role: 'interior_designer',
+              isEmailVerified: designer.isVerified ?? true,
+              isActive: designer.isActive,
+              avatar: { url: designer.profileImage || defaultAvatarUrl }
+            }
+          };
+        }
+      }
     }
-    
-    if (!user) {
+
+    if (!principal) {
       return res.status(401).json({
         status: 'error',
         message: 'User no longer exists.'
       });
     }
 
-    // Check if user account is active
-    if (!user.isActive) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'User account is deactivated.'
-      });
-    }
+    // For regular users, enforce additional checks
+    if (principal instanceof User) {
+      if (!principal.isActive) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'User account is deactivated.'
+        });
+      }
 
-    // Check if account is locked
-    if (user.isLocked()) {
-      return res.status(423).json({
-        status: 'error',
-        message: 'Account is temporarily locked due to too many failed login attempts.'
-      });
+      if (principal.isLocked && principal.isLocked()) {
+        return res.status(423).json({
+          status: 'error',
+          message: 'Account is temporarily locked due to too many failed login attempts.'
+        });
+      }
     }
 
     // Grant access to protected route
-    req.user = user;
+    req.user = principal;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error.message);

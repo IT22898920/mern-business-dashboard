@@ -54,11 +54,11 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <RefreshCw className="h-12 w-12 text-purple-600 animate-spin mx-auto mb-4" />
+            <RefreshCw className="h-12 w-12 text-black animate-spin mx-auto mb-4" />
             <p className="text-lg text-gray-600">Loading product details...</p>
           </div>
         </div>
@@ -69,15 +69,15 @@ const ProductDetail = () => {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Product Not Found</h2>
+            <h2 className="text-2xl font-bold text-black mb-2">Product Not Found</h2>
             <p className="text-gray-600 mb-6">Sorry, we couldn't find the product you're looking for.</p>
             <button
               onClick={() => navigate('/products')}
-              className="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-6 py-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+              className="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 hover:shadow-lg transform hover:scale-105 transition-all duration-300"
             >
               Back to Products
             </button>
@@ -106,7 +106,7 @@ const ProductDetail = () => {
         {/* Back Button */}
         <button
           onClick={() => navigate('/products')}
-          className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 mb-8 transition-colors duration-300"
+          className="flex items-center space-x-2 text-gray-600 hover:text-amber-600 mb-8 transition-colors duration-300"
         >
           <ArrowLeft className="h-5 w-5" />
           <span>Back to Products</span>
@@ -132,7 +132,7 @@ const ProductDetail = () => {
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                      selectedImage === index ? 'border-purple-500 shadow-lg' : 'border-gray-200 hover:border-gray-300'
+                      selectedImage === index ? 'border-amber-500 shadow-lg' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <img
@@ -152,15 +152,15 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-2">{product.name}</h1>
-              <p className="text-sm text-purple-600 font-medium uppercase tracking-wide">
+              <h1 className="text-3xl lg:text-4xl font-bold text-black mb-2">{product.name}</h1>
+              <p className="text-sm text-amber-600 font-medium uppercase tracking-wide">
                 {product.category?.name || 'Uncategorized'}
               </p>
             </div>
 
             {/* Price */}
             <div className="flex items-baseline space-x-3">
-              <span className="text-4xl font-bold text-gray-900">
+              <span className="text-4xl font-bold text-black">
                 ${product.price?.toFixed(2)}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
@@ -202,7 +202,7 @@ const ProductDetail = () => {
             {/* Description */}
             {product.description && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                <h3 className="text-lg font-semibold text-black mb-2">Description</h3>
                 <p className="text-gray-600 leading-relaxed">{product.description}</p>
               </div>
             )}
@@ -234,7 +234,7 @@ const ProductDetail = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={handleAddToCart}
-                    className="flex-1 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
+                    className="flex-1 bg-black text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-800 hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
                   >
                     <ShoppingCart className="h-5 w-5" />
                     <span>Add to Cart</span>
@@ -257,15 +257,15 @@ const ProductDetail = () => {
             {/* Features */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-gray-200">
               <div className="flex items-center space-x-3 text-sm text-gray-600">
-                <Truck className="h-5 w-5 text-purple-500" />
+                <Truck className="h-5 w-5 text-amber-500" />
                 <span>Free Delivery</span>
               </div>
               <div className="flex items-center space-x-3 text-sm text-gray-600">
-                <Shield className="h-5 w-5 text-purple-500" />
+                <Shield className="h-5 w-5 text-amber-500" />
                 <span>1 Year Warranty</span>
               </div>
               <div className="flex items-center space-x-3 text-sm text-gray-600">
-                <RefreshCw className="h-5 w-5 text-purple-500" />
+                <RefreshCw className="h-5 w-5 text-amber-500" />
                 <span>Easy Returns</span>
               </div>
             </div>

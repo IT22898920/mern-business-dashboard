@@ -33,7 +33,6 @@ import SupplierDeliveries from './pages/supplier/SupplierDeliveries';
 import SupplierReports from './pages/supplier/SupplierReports';
 import SupplierProfile from './pages/supplier/SupplierProfile';
 import SupplierSettings from './pages/supplier/SupplierSettings';
-import DesignerDashboard from './pages/dashboards/DesignerDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProductsCatalog from './pages/ProductsCatalog';
 import ProductDetail from './pages/ProductDetail';
@@ -42,6 +41,11 @@ import SupplierApplication from './pages/SupplierApplication';
 import SupplierApplicationsManagement from './pages/admin/SupplierApplicationsManagement';
 import ReorderResponses from './pages/admin/ReorderResponses';
 import AllSuppliers from './pages/admin/AllSuppliers';
+import EmployeeManagement from './pages/admin/EmployeeManagement';
+import InteriorDesignersManagement from './pages/admin/InteriorDesignersManagement';
+import DesignerDashboard from './pages/dashboards/DesignerDashboard';
+import { useAuth } from './contexts/AuthContext';
+import { getRoleBasedRedirect } from './utils/roleRedirect';
 
 // 404 Page Component
 const NotFound = () => (
@@ -63,6 +67,18 @@ const NotFound = () => (
 );
 
 function App() {
+  const HomeRouteElement = () => {
+    const { isAuthenticated, user, isLoading } = useAuth();
+    if (isLoading) {
+      return <InteriorDesignHomePage />;
+    }
+    if (isAuthenticated && user?.role) {
+      const path = getRoleBasedRedirect(user.role);
+      return <Navigate to={path} replace />;
+    }
+    return <InteriorDesignHomePage />;
+  };
+
   return (
     <Router>
       <AuthProvider>
@@ -160,7 +176,7 @@ function App() {
               path="/admin/employees" 
               element={
                 <ProtectedRoute roles={['admin']}>
-                  <AdminDashboard />
+                  <EmployeeManagement />
                 </ProtectedRoute>
               } 
             />
@@ -209,6 +225,14 @@ function App() {
               element={
                 <ProtectedRoute roles={['admin']}>
                   <AllSuppliers />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/designers" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <InteriorDesignersManagement />
                 </ProtectedRoute>
               } 
             />
@@ -325,7 +349,9 @@ function App() {
               path="/designer/dashboard" 
               element={
                 <ProtectedRoute roles={['admin', 'interior_designer']}>
-                  <DesignerDashboard />
+                  <div className="min-h-screen bg-secondary-50">
+                    <DesignerDashboard />
+                  </div>
                 </ProtectedRoute>
               } 
             />
@@ -333,12 +359,7 @@ function App() {
               path="/designer/*" 
               element={
                 <ProtectedRoute roles={['admin', 'interior_designer']}>
-                  <div className="min-h-screen bg-secondary-50 flex items-center justify-center">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold text-secondary-900 mb-4">Designer Panel</h2>
-                      <p className="text-secondary-600">Designer panel coming soon...</p>
-                    </div>
-                  </div>
+                  <Navigate to="/designer/dashboard" replace />
                 </ProtectedRoute>
               } 
             />

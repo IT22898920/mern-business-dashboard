@@ -29,31 +29,31 @@ const Dashboard = () => {
   const roleConfig = {
     user: {
       title: 'Customer Dashboard',
-      color: 'bg-blue-500',
+      color: 'bg-black',
       icon: User,
       features: ['Browse Products', 'Order History', 'Profile Settings']
     },
     admin: {
       title: 'Admin Dashboard',
-      color: 'bg-red-500',
+      color: 'bg-black',
       icon: Settings,
       features: ['User Management', 'Analytics', 'System Settings', 'All Features']
     },
     employee: {
       title: 'Employee Dashboard',
-      color: 'bg-green-500',
+      color: 'bg-black',
       icon: BarChart3,
       features: ['Product Management', 'Order Processing', 'Customer Support']
     },
     supplier: {
       title: 'Supplier Dashboard',
-      color: 'bg-yellow-500',
+      color: 'bg-black',
       icon: Package,
       features: ['Inventory Management', 'Order Fulfillment', 'Product Uploads']
     },
     interior_designer: {
       title: 'Designer Dashboard',
-      color: 'bg-purple-500',
+      color: 'bg-black',
       icon: PaintBucket,
       features: ['Design Tools', 'Client Management', 'Project Gallery']
     }
@@ -69,29 +69,29 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-white" />
             </div>
             <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">+12%</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">$45,231</h3>
+          <h3 className="text-2xl font-bold text-black">$45,231</h3>
           <p className="text-sm text-gray-500 mt-1">Total Revenue</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
               <ShoppingBag className="w-6 h-6 text-white" />
             </div>
             <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">+23%</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">1,234</h3>
+          <h3 className="text-2xl font-bold text-black">1,234</h3>
           <p className="text-sm text-gray-500 mt-1">Total Orders</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-white" />
             </div>
             <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">+18%</span>
@@ -102,12 +102,12 @@ const Dashboard = () => {
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
               <Eye className="w-6 h-6 text-white" />
             </div>
             <span className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded-full">-5%</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900">89.2k</h3>
+          <h3 className="text-2xl font-bold text-black">89.2k</h3>
           <p className="text-sm text-gray-500 mt-1">Page Views</p>
         </div>
       </div>
@@ -117,48 +117,48 @@ const Dashboard = () => {
         {/* Sales Chart */}
         <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-200/50">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Sales Overview</h3>
+            <h3 className="text-lg font-semibold text-black">Sales Overview</h3>
             <div className="flex items-center gap-2">
-              <button className="text-sm px-3 py-1 rounded-lg bg-blue-50 text-blue-600 font-medium">Week</button>
+              <button className="text-sm px-3 py-1 rounded-lg bg-amber-50 text-amber-600 font-medium">Week</button>
               <button className="text-sm px-3 py-1 rounded-lg text-gray-600 hover:bg-gray-50">Month</button>
               <button className="text-sm px-3 py-1 rounded-lg text-gray-600 hover:bg-gray-50">Year</button>
             </div>
           </div>
-          <div className="h-64 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg">
-            <TrendingUp className="w-16 h-16 text-blue-500" />
+          <div className="h-64 flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg">
+            <TrendingUp className="w-16 h-16 text-amber-500" />
             <p className="ml-4 text-gray-600">Sales chart will be displayed here</p>
           </div>
         </div>
 
         {/* Recent Activities */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200/50">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Activities</h3>
+          <h3 className="text-lg font-semibold text-black mb-6">Recent Activities</h3>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
               <div>
-                <p className="text-sm text-gray-900">New order #1234</p>
+                <p className="text-sm text-black">New order #1234</p>
                 <p className="text-xs text-gray-500">2 minutes ago</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
               <div>
-                <p className="text-sm text-gray-900">User registered</p>
+                <p className="text-sm text-black">User registered</p>
                 <p className="text-xs text-gray-500">15 minutes ago</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
               <div>
-                <p className="text-sm text-gray-900">Payment received</p>
+                <p className="text-sm text-black">Payment received</p>
                 <p className="text-xs text-gray-500">1 hour ago</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
               <div>
-                <p className="text-sm text-gray-900">Product updated</p>
+                <p className="text-sm text-black">Product updated</p>
                 <p className="text-xs text-gray-500">2 hours ago</p>
               </div>
             </div>
@@ -170,14 +170,14 @@ const Dashboard = () => {
 
   // Regular Dashboard Content (non-admin)
   const regularDashboardContent = (
-    <div className="min-h-screen bg-secondary-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-2xl font-bold text-secondary-900 mb-2">
+        <div className="bg-white rounded-lg shadow p-6 mb-8 border border-amber-200">
+          <h2 className="text-2xl font-bold text-black mb-2">
             Welcome back, {user?.name}! 👋
           </h2>
-          <p className="text-secondary-600">
+          <p className="text-gray-600">
             You're logged in as a <span className="capitalize font-medium">{user?.role}</span>.
             {!user?.isEmailVerified && (
               <span className="ml-2 text-orange-600 font-medium">
@@ -190,9 +190,9 @@ const Dashboard = () => {
         {/* Role-based Features */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {currentRole.features.map((feature, index) => (
-            <div key={index} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-              <h3 className="font-medium text-secondary-900 mb-2">{feature}</h3>
-              <p className="text-sm text-secondary-600">
+            <div key={index} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow border border-amber-200">
+              <h3 className="font-medium text-black mb-2">{feature}</h3>
+              <p className="text-sm text-gray-600">
                 Access {feature.toLowerCase()} functionality
               </p>
               <Button 
@@ -208,10 +208,10 @@ const Dashboard = () => {
 
         {/* Admin Only Section */}
         <RoleBasedAccess roles={['admin']}>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
             <div className="flex items-center mb-4">
-              <Settings className="w-6 h-6 text-red-600 mr-3" />
-              <h3 className="text-lg font-semibold text-red-900">
+              <Settings className="w-6 h-6 text-black mr-3" />
+              <h3 className="text-lg font-semibold text-black">
                 Admin Controls
               </h3>
             </div>
@@ -234,10 +234,10 @@ const Dashboard = () => {
 
         {/* Staff Only Section */}
         <RoleBasedAccess roles={['admin', 'employee']}>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-8">
             <div className="flex items-center mb-4">
-              <BarChart3 className="w-6 h-6 text-green-600 mr-3" />
-              <h3 className="text-lg font-semibold text-green-900">
+              <BarChart3 className="w-6 h-6 text-black mr-3" />
+              <h3 className="text-lg font-semibold text-black">
                 Staff Tools
               </h3>
             </div>
